@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기본간호학1 적응형 퀴즈 (8~15주차)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:20px}
+#app{max-width:760px;margin:0 auto}
+
+/* Header */
+.header{text-align:center;padding:28px 0 18px}
+.header h1{font-size:1.55rem;font-weight:700;color:#f1f5f9;letter-spacing:-.5px}
+.header p{color:#94a3b8;font-size:.85rem;margin-top:6px}
+
+/* Progress */
+.progress-bar{background:#1e293b;border-radius:99px;height:8px;overflow:hidden;margin:14px 0 6px}
+.progress-fill{height:100%;border-radius:99px;transition:width .4s;background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.progress-meta{display:flex;justify-content:space-between;font-size:.78rem;color:#64748b}
+
+/* Difficulty badge */
+.diff-row{display:flex;gap:10px;align-items:center;margin:16px 0 10px;flex-wrap:wrap}
+.diff-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:.78rem;font-weight:700;letter-spacing:.3px}
+.diff-1{background:#1e3a2e;color:#4ade80;border:1px solid #166534}
+.diff-2{background:#1e2f4a;color:#60a5fa;border:1px solid #1d4ed8}
+.diff-3{background:#3a1e2e;color:#f472b6;border:1px solid #9d174d}
+.streak-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#1e293b;color:#fbbf24;border:1px solid #78350f}
+.week-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.type-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#2e1e3a;color:#c084fc;border:1px solid #6d28d9}
+
+/* Card */
+.card{background:#1e293b;border-radius:16px;padding:28px 28px 24px;margin-bottom:16px;border:1px solid #334155}
+.q-num{font-size:.78rem;color:#64748b;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.q-text{font-size:1.05rem;line-height:1.7;color:#f1f5f9;font-weight:500}
+.q-hint{font-size:.8rem;color:#6366f1;margin-top:8px;font-style:italic}
+
+/* Options */
+.options{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:10px;border:1.5px solid #334155;cursor:pointer;transition:all .18s;background:#0f172a}
+.option:hover{border-color:#6366f1;background:#1e1e3a}
+.option.selected{border-color:#6366f1;background:#1e1e3a}
+.option.correct{border-color:#22c55e!important;background:#0d2a1a!important}
+.option.wrong{border-color:#ef4444!important;background:#2a0d0d!important}
+.option.highlight{border-color:#22c55e!important;background:#0d2a1a!important}
+.option input{accent-color:#6366f1;margin-top:2px;flex-shrink:0;width:17px;height:17px}
+.option-text{font-size:.95rem;line-height:1.5;color:#cbd5e1}
+
+/* Short answer */
+.short-input{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:10px;padding:13px 16px;color:#f1f5f9;font-size:.95rem;margin-top:18px;outline:none;transition:border-color .2s;font-family:inherit}
+.short-input:focus{border-color:#6366f1}
+.short-input.correct-input{border-color:#22c55e!important}
+.short-input.wrong-input{border-color:#ef4444!important}
+
+/* Buttons */
+.btn{padding:12px 28px;border-radius:10px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;transform:none;cursor:not-allowed}
+.btn-next{background:#1e293b;color:#e2e8f0;border:1.5px solid #475569}
+.btn-next:hover{border-color:#6366f1;color:#c7d2fe}
+.btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+
+/* Feedback */
+.feedback{padding:16px 18px;border-radius:10px;margin-top:16px;line-height:1.6;font-size:.9rem}
+.feedback.correct-fb{background:#0d2a1a;border:1px solid #166534;color:#86efac}
+.feedback.wrong-fb{background:#2a0d0d;border:1px solid #991b1b;color:#fca5a5}
+.feedback-title{font-weight:700;font-size:1rem;margin-bottom:6px}
+.feedback-exp{color:#cbd5e1;margin-top:8px;font-size:.88rem;line-height:1.65}
+
+/* Hint bar */
+.hint-bar{background:#1e2a1e;border:1px solid #166534;border-radius:8px;padding:10px 14px;margin-top:10px;font-size:.82rem;color:#86efac}
+
+/* Result screen */
+.result{text-align:center;padding:40px 20px}
+.result-score{font-size:3.5rem;font-weight:800;background:linear-gradient(135deg,#6366f1,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:18px 0 8px}
+.result-label{font-size:1rem;color:#94a3b8;margin-bottom:24px}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+.result-cell{background:#1e293b;border-radius:12px;padding:18px 10px;border:1px solid #334155}
+.result-cell-n{font-size:1.8rem;font-weight:700;color:#f1f5f9}
+.result-cell-l{font-size:.78rem;color:#64748b;margin-top:4px}
+.result-msg{font-size:1.1rem;color:#e2e8f0;margin:10px 0 24px;line-height:1.6}
+.diff-summary{display:flex;flex-direction:column;gap:8px;margin:16px 0 28px;text-align:left}
+.diff-summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1e293b;border-radius:8px;font-size:.88rem}
+.btn-restart{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 36px;border-radius:12px;border:none;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.btn-restart:hover{opacity:.88}
+
+/* Start screen */
+.start{text-align:center;padding:50px 20px}
+.start h2{font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-bottom:12px}
+.start p{color:#94a3b8;font-size:.92rem;line-height:1.7;margin-bottom:10px}
+.start-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}
+.start-cell{background:#1e293b;border-radius:12px;padding:18px 10px;border:1px solid #334155}
+.start-cell-n{font-size:1.6rem;font-weight:700}
+.start-cell-l{font-size:.78rem;color:#64748b;margin-top:6px}
+.n-green{color:#4ade80}.n-blue{color:#60a5fa}.n-pink{color:#f472b6}
+.algo-box{background:#1e293b;border-radius:12px;padding:18px 20px;text-align:left;margin:0 0 28px;border:1px solid #334155;font-size:.85rem;line-height:1.75;color:#94a3b8}
+.algo-box strong{color:#c7d2fe}
+
+@media(max-width:480px){
+  .card{padding:20px 16px}
+  .result-grid{grid-template-columns:repeat(3,1fr)}
+  .start-grid{grid-template-columns:repeat(3,1fr)}
+  .diff-row{gap:6px}
+  .diff-badge,.streak-badge,.week-badge,.type-badge{padding:4px 10px;font-size:.72rem}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ─── QUESTION BANK (80 questions) ────────────────────────────────────────────
+const QUESTIONS = [
+// ══ 8주차 ══
+{id:1,week:8,diff:1,type:'single',
+q:'ADME에서 약물의 대사(Metabolism)가 주로 일어나는 기관은?',
+opts:['신장','간','폐','소장','피부'],
+ans:[1],
+exp:'약물 대사는 주로 간(liver)에서 이루어집니다. 신장은 배설(Excretion)을 담당합니다.'},
+{id:2,week:8,diff:1,type:'single',
+q:'투약의 6Rights 중 해당하지 않는 것은?',
+opts:['정확한 환자','정확한 약물','정확한 진단','정확한 용량','정확한 시간'],
+ans:[2],
+exp:'6Rights: 정확한 환자·약물·용량·경로·시간·기록. 진단은 의사의 영역으로 6Rights에 포함되지 않습니다.'},
+{id:3,week:8,diff:1,type:'single',
+q:'귀약 투여 시 3세 이하 영아에서 이개(귀)를 당기는 방향은?',
+opts:['후상방','전상방','후하방','전하방','후방'],
+ans:[2],
+exp:'3세 이하: 이개를 후하방으로, 3세 이상: 후상방으로 당겨 외이도를 직선화합니다.'},
+{id:4,week:8,diff:1,type:'single',
+q:'투약 기록을 약물 투여 후 즉시 해야 하는 주된 이유는?',
+opts:['간호사의 편의를 위해','법적인 의미가 있기 때문','의사가 요구하기 때문','약물 효과를 확인하기 위해','보험 청구를 위해'],
+ans:[1],
+exp:'투약 기록은 법적 의미가 있는 기록입니다. 투여 전 기록 금지, 투여 후 즉시 기록해야 합니다.'},
+{id:5,week:8,diff:1,type:'single',
+q:'Stat order의 정의로 옳은 것은?',
+opts:['특정 시간에 한 번만 투여','중단 지시까지 계속 투여','처방 즉시 1회만 투여','필요 시 투여','식전에 투여'],
+ans:[2],
+exp:'Stat order = 즉시 처방. 처방 즉시 1회 투여. 주로 응급 상황에 사용합니다.'},
+{id:6,week:8,diff:1,type:'single',
+q:'경구 물약(액체 약)의 용량을 읽을 때 기준이 되는 것은?',
+opts:['액체의 최상단 높이','액체의 평균 높이','바닥 높이(Meniscus)','눈금의 최대값','용기 중간선'],
+ans:[2],
+exp:'약잔을 눈높이에 위치시키고 액체의 바닥 높이(Meniscus)를 기준으로 눈금을 읽습니다.'},
+{id:7,week:8,diff:1,type:'single',
+q:'안약(eye drop)과 안연고(eye ointment)를 함께 투여할 때 올바른 순서는?',
+opts:['안연고 먼저 → 안약','안약 먼저 → 안연고','동시에 투여','순서 무관','안약만 투여'],
+ans:[1],
+exp:'안약을 먼저 투여한 후 안연고를 투여합니다. 안연고가 먼저 들어가면 안약 흡수를 방해합니다.'},
+{id:8,week:8,diff:1,type:'single',
+q:'흡입제(Inhaler) 스테로이드 제제 사용 후 반드시 해야 하는 것은?',
+opts:['코를 막기','물로 입안 헹구기','30분간 눕기','깊게 호흡하기','즉시 물 마시기'],
+ans:[1],
+exp:'흡입 스테로이드 사용 후 반드시 물로 입안을 헹궈야 합니다. 헹구지 않으면 구강 칸디다증이 발생할 수 있습니다.'},
+{id:9,week:8,diff:2,type:'multi',
+q:'다음 중 경구투약의 금기 대상자에 해당하는 것을 모두 고르시오. (복수정답)',
+opts:['무의식 환자','연하곤란 환자','편마비 환자','NPO 환자','구토 환자'],
+ans:[0,1,3,4],
+exp:'경구투약 금기: 무의식·연하곤란·지남력상실·NPO·구강수술/외상·구토 환자. 편마비 환자는 건강한 쪽으로 삼키게 하면 경구투약 가능합니다.'},
+{id:10,week:8,diff:2,type:'single',
+q:'알코올과 진정제를 함께 복용했을 때 나타나는 약물 상호작용은?',
+opts:['대항효과','내성','상승효과','습관화','위약효과'],
+ans:[2],
+exp:'알코올+진정제 → 상승효과(Synergistic effect). 두 약물을 함께 투여 시 각각의 효과보다 더 큰 효과가 나타납니다.'},
+{id:11,week:8,diff:2,type:'single',
+q:'PRN order(필요시 처방)의 특징으로 옳은 것은?',
+opts:['처방 즉시 1회 투여','특정 시간에 한 번만 투여','중단 지시까지 계속 투여','특정 증상 발생 시 간호사 판단으로 투여','의사가 직접 투여'],
+ans:[3],
+exp:'PRN order = 필요시 처방. 특정 증상이나 상황 발생 시 간호사의 판단에 따라 투여합니다.'},
+{id:12,week:8,diff:2,type:'multi',
+q:'약물 작용에 영향을 미치는 신체적(Physical) 변수에 해당하는 것을 모두 고르시오. (복수정답)',
+opts:['연령','유전적 요인','위약효과','성별','음식'],
+ans:[0,1,3],
+exp:'신체적 변수: 연령·성별·키·체중·유전적 요인. 위약효과=병태생리적 변수, 음식=외부적 변수입니다.'},
+{id:13,week:8,diff:3,type:'multi',
+q:'다음 중 약물 작용 유형과 설명이 올바르게 연결된 것을 모두 고르시오. (복수정답)',
+opts:['부작용 - 치료 목적과 무관하나 예측 가능한 경미한 반응','독성 효과 - 고용량 또는 과도한 축적으로 인한 치명적 반응','알레르기 반응 - 반복 사용으로 생기는 심리적 의존','약물 내성 - 동일 효과를 위해 용량 증가가 필요한 상태','축적 효과 - 대사/배설 지연으로 체내 약물이 쌓여 효과 증폭'],
+ans:[0,1,3,4],
+exp:'알레르기 반응은 약물을 외부 물질로 인식하는 면역 반응으로, 심리적 의존(습관화)과 다릅니다. 나머지는 모두 올바른 설명입니다.'},
+{id:14,week:8,diff:3,type:'short',
+q:'구두처방(verbal order) 후 반드시 서면 처방을 받아야 하는 시간 제한을 적으시오.',
+keys:['24','24시간'],
+exp:'구두처방은 CPR 등 긴급상황에서만 수행하며, 24시간 이내 반드시 서면 처방을 받아야 합니다.'},
+
+// ══ 9주차 ══
+{id:15,week:9,diff:1,type:'single',
+q:'비경구 투약(주사) 중 흡수 속도가 가장 빠른 것은?',
+opts:['피내주사(ID)','피하주사(SC)','근육주사(IM)','정맥주사(IV)','경구투약'],
+ans:[3],
+exp:'흡수 속도: IV > IM > SC > ID. 정맥주사는 약물을 혈관에 직접 투여하므로 가장 빠릅니다.'},
+{id:16,week:9,diff:1,type:'single',
+q:'피내주사(ID, intradermal injection)의 주사 각도는?',
+opts:['45°','90°','10~15°','25~30°','60~75°'],
+ans:[2],
+exp:'피내주사: 10~15° 각도로 진피층에 주입. 피하주사: 45~90°, 근육주사: 90°.'},
+{id:17,week:9,diff:1,type:'single',
+q:'Z-Track 기법 시행 후 절대 해서는 안 되는 것은?',
+opts:['삽입 부위에 압력 가하기','마사지','솜으로 덮기','일반적 관찰','체위 유지'],
+ans:[1],
+exp:'Z-Track 기법 후 마사지는 절대 금지입니다. 마사지하면 Z자로 어긋난 경로가 펴지면서 약물이 피하조직으로 새어나옵니다.'},
+{id:18,week:9,diff:1,type:'single',
+q:'근육주사 부위 중 현대 간호학에서 가장 권장하는 부위는?',
+opts:['둔부 배면(Dorsogluteal)','둔부 복면(Ventrogluteal)','외측광근(Vastus lateralis)','삼각근(Deltoid)','대퇴직근(Rectus femoris)'],
+ans:[1],
+exp:'둔부 복면(Ventrogluteal): 신경·혈관 없음, 지방 적음, 분변 오염 적음. 현대 간호학에서 가장 권장하는 IM 부위입니다.'},
+{id:19,week:9,diff:1,type:'single',
+q:'인슐린 주사 부위 중 흡수 속도가 가장 빠른 곳은?',
+opts:['둔부','대퇴부','상완부','복부','전완부'],
+ans:[3],
+exp:'인슐린 흡수 속도: 복부 > 상완부 > 대퇴부 > 둔부. 일정한 혈당 조절을 위해 복부 주사를 권장합니다.'},
+{id:20,week:9,diff:1,type:'single',
+q:'헤파린 피하주사 시 주의사항으로 옳지 않은 것은?',
+opts:['배꼽에서 5cm 이내 피함','내관을 당겨 흡인 금지','주사 후 마사지 금지','주사기 내 0.1cc 공기 포함','같은 부위 반복 주사 금지'],
+ans:[2],
+exp:'헤파린 주사 후 마사지는 절대 금지입니다. 마사지하면 혈종 및 출혈 위험이 증가합니다.'},
+{id:21,week:9,diff:2,type:'single',
+q:'항생제 피부반응 검사(AST) 양성 판정 기준은?',
+opts:['팽진·발적 직경 5mm 이상','팽진·발적 직경 10mm 이상','팽진·발적 직경 3mm 이상','팽진·발적 직경 15mm 이상','팽진만 있어도 양성'],
+ans:[1],
+exp:'AST 양성: 팽진·발적 직경 10mm 이상 OR 시험액이 대조액보다 강함 OR 전신 증상(두통·안면홍조·호흡곤란 등). 판독은 15~20분 후.'},
+{id:22,week:9,diff:2,type:'single',
+q:'Z-Track 기법에서 약물 주입 후 주삿바늘을 제거하기 전 대기 시간은?',
+opts:['2초','5초','10초','30초','1분'],
+ans:[2],
+exp:'약물 주입 후 피부를 팽팽히 당긴 채 10초 기다린 후 주삿바늘을 재빨리 빼면서 당긴 피부를 놓습니다.'},
+{id:23,week:9,diff:2,type:'single',
+q:'둔부 배면(Dorsogluteal) 근육주사가 3세 이하에게 금기인 이유는?',
+opts:['통증이 너무 심하기 때문에','보행 시 발달하는 근육이기 때문에','혈관이 많기 때문에','피하조직이 없기 때문에','약물이 빠르게 흡수되기 때문에'],
+ans:[1],
+exp:'대둔근은 보행을 통해 발달하는 근육이므로 아직 걸음마를 시작하지 않은 3세 이하 어린이에게는 금기입니다.'},
+{id:24,week:9,diff:2,type:'single',
+q:'인슐린 혼합 주사 시 올바른 순서는?',
+opts:['탁한 것(중간형) 먼저 → 맑은 것(속효성)','맑은 것(속효성) 먼저 → 탁한 것(중간형)','동시에 혼합','순서 무관','장시간형만 사용'],
+ans:[1],
+exp:'인슐린 혼합 순서: 맑은 것(속효성/초속효성) → 탁한 것(중간형/지속형). 탁한 것이 맑은 바이알에 들어가면 오염됩니다.'},
+{id:25,week:9,diff:2,type:'single',
+q:'피하주사(SC)의 주사 각도는?',
+opts:['10~15°','90°만 가능','45~90°','30°','60~75°'],
+ans:[2],
+exp:'피하주사: 45~90°. 피하조직 두께에 따라 45°(1.6cm) 또는 90°(1.3cm)를 선택합니다.'},
+{id:26,week:9,diff:2,type:'single',
+q:'결핵반응 검사(Tuberculin test) 결과 판독 시간은?',
+opts:['15~20분 후','1시간 후','24시간 후','48~72시간 후','1주일 후'],
+ans:[3],
+exp:'결핵반응 검사: 48~72시간 후 판독. AST 피부반응 검사는 15~20분 후 판독합니다.'},
+{id:27,week:9,diff:3,type:'multi',
+q:'Z-Track 기법의 올바른 시술 방법을 모두 고르시오. (복수정답)',
+opts:['바늘 삽입 전 조직을 옆쪽으로 약 2.5cm 당김','약물 주입 후 당긴 채 10초 기다림','바늘 제거 후 즉시 마사지','주삿바늘을 빼면서 당긴 피부를 동시에 놓음','주사기에 0.2mL 기포를 포함'],
+ans:[0,1,3,4],
+exp:'Z-Track: 옆으로 당김 → 삽입 → 흡인 확인 → 주입 → 10초 대기 → 빠르게 빼며 피부 놓기 → 마사지 절대 금지. 0.2mL 기포는 약물이 모두 주입되도록 돕습니다.'},
+{id:28,week:9,diff:3,type:'short',
+q:'항생제 AST 희석법에서 최종 목표 농도를 적으시오. (단위 포함)',
+keys:['2mg/ml','2 mg/ml','2mg/mL','2 mg/mL','2밀리그램'],
+exp:'AST 최종 농도: 2mg/mL. 1g 바이알 기준으로 두 단계 희석을 거쳐 2mg/mL 농도로 만듭니다.'},
+
+// ══ 11주차 ══
+{id:29,week:11,diff:1,type:'single',
+q:'정맥주사(IV)의 가장 큰 장점은?',
+opts:['비용이 저렴하다','가장 신속한 효과','합병증이 거의 없다','집에서 쉽게 시행 가능하다','모든 약물에 적용된다'],
+ans:[1],
+exp:'IV = 약물을 혈관에 직접 투여 → 가장 신속한 효과. 응급상황(심정지 등)에서 사용합니다.'},
+{id:30,week:11,diff:1,type:'single',
+q:'일반 수액세트(macro drip set)의 방울수는?',
+opts:['10 gtt/mL','15 gtt/mL','20 gtt/mL','60 gtt/mL','100 gtt/mL'],
+ans:[2],
+exp:'일반 수액세트: 20 gtt/mL. Microdrip set: 60 gtt/mL (소아·소량 투여 시 사용).'},
+{id:31,week:11,diff:1,type:'single',
+q:'말초정맥 카테터의 정기 교환 시기는?',
+opts:['24~48시간마다','48~72시간마다','72~96시간마다','5~7일마다','2주마다'],
+ans:[2],
+exp:'말초정맥 카테터: 72~96시간마다 교환. 수액세트: 24~72시간마다 교환.'},
+{id:32,week:11,diff:1,type:'single',
+q:'공기색전증(Air embolism) 발생 시 취해야 할 체위는?',
+opts:['반좌위(Semi-Fowler\'s)','우측 측와위','트렌델렌버그 + 왼쪽 측와위','복위(Prone position)','앙와위(Supine)'],
+ans:[2],
+exp:'공기색전증: 즉시 주입 중단 → 트렌델렌버그 자세에서 왼쪽 측와위. 공기가 폐동맥으로 가는 것을 막기 위해서입니다.'},
+{id:33,week:11,diff:1,type:'single',
+q:'성인 정맥주사 부위 중 수혈에 가장 적합한 혈관은?',
+opts:['손가락정맥','노쪽피부정맥(Cephalic vein)','자쪽피부정맥(Basilic vein)','하지 정맥','중간팔오금정맥'],
+ans:[1],
+exp:'노쪽피부정맥: 굵고 지지가 잘 되며 큰 카테터가 가능하여 정맥요법·수혈에 가장 적합합니다.'},
+{id:34,week:11,diff:1,type:'single',
+q:'정맥주사 주입속도 유지를 위해 수액용기는 정맥 연결 부위보다 얼마나 높게 유지해야 하는가?',
+opts:['20~30cm 이상','40~50cm 이상','80~90cm 이상','100~120cm 이상','150cm 이상'],
+ans:[2],
+exp:'수액용기는 정맥 연결 부위보다 80~90cm 이상 높게 유지하여 중력에 의한 수액 흐름을 유지합니다.'},
+{id:35,week:11,diff:2,type:'single',
+q:'정맥주사 부작용 중 침윤(Infiltration)의 특징적인 증상은?',
+opts:['발열·오한·화농성 삼출물','부종·냉감·혈액역류 없음','조직괴사·심한 통증·수포','흉통·호흡곤란·청색증','붉은 선·통증·열감'],
+ans:[1],
+exp:'침윤: 수액이 혈관 밖 피하조직으로 스며든 상태 → 부종·냉감·통증, 혈액역류 없음. 일혈과 달리 조직괴사로 진행하지 않습니다.'},
+{id:36,week:11,diff:2,type:'single',
+q:'수액과다(Fluid Overload) 발생 시 취해야 할 자세는?',
+opts:['복위','트렌델렌버그 자세','좌위 또는 semi-Fowler\'s 자세','왼쪽 측와위','앙와위'],
+ans:[2],
+exp:'수액과다 → 좌위 또는 semi-Fowler\'s 자세 취하게 하여 호흡을 돕고 심장 부담을 줄입니다. 필요 시 산소 공급.'},
+{id:37,week:11,diff:2,type:'multi',
+q:'정맥주사 시 피해야 할 부위를 모두 고르시오. (복수정답)',
+opts:['AV fistula(동정맥루)가 있는 부위','유방절제술을 시행한 쪽 팔','굴곡(관절) 부위','감염·부종이 있는 부위','노쪽피부정맥(Cephalic vein)'],
+ans:[0,1,2,3],
+exp:'피해야 할 부위: AV fistula·유방절제술 쪽 팔·굴곡 부위·감염/부종 있는 부위·경화/손상된 혈관. 노쪽피부정맥은 수혈에 가장 적합한 혈관입니다.'},
+{id:38,week:11,diff:2,type:'single',
+q:'분당 방울수(gtt/min) 계산 공식으로 옳은 것은?',
+opts:['총량(mL) × 총시간(min) ÷ 방울수','(총량 × 방울수) ÷ 총시간(min)','총시간(min) ÷ 총량(mL)','방울수 ÷ 총량','총량 ÷ 방울수'],
+ans:[1],
+exp:'gtt/min = [전체 주입량(mL) × 방울수(gtt/mL)] ÷ 전체 주입시간(min). 일반 세트 20, microdrip 60.'},
+{id:39,week:11,diff:2,type:'single',
+q:'수액세트(IV tubing) 교환 주기는?',
+opts:['12~24시간마다','24~72시간마다','72~96시간마다','48~72시간마다','1주일마다'],
+ans:[1],
+exp:'수액세트: 24~72시간마다 교환 (오염 의심 시 즉시 교환). 말초정맥 카테터는 72~96시간마다.'},
+{id:40,week:11,diff:3,type:'single',
+q:'총 500mL를 4시간 동안 일반 수액세트(20 gtt/mL)로 주입할 때 분당 방울수(gtt/min)는?',
+opts:['20 gtt/min','30 gtt/min','38 gtt/min','42 gtt/min','50 gtt/min'],
+ans:[3],
+exp:'gtt/min = (500 × 20) ÷ (4 × 60) = 10,000 ÷ 240 = 41.7 ≈ 42 gtt/min.'},
+{id:41,week:11,diff:3,type:'single',
+q:'일혈(Extravasation)과 침윤(Infiltration)을 구별하는 가장 중요한 차이점은?',
+opts:['발생 원인이 다르다','일혈은 자극성 약물로 조직괴사가 가능하다','침윤이 증상이 더 심각하다','치료법이 완전히 다르다','발생 빈도가 다르다'],
+ans:[1],
+exp:'일혈: 자극성·조직괴사 유발 약물이 혈관 밖으로 새어 조직괴사로 진행 가능. 침윤: 비자극성 용액이 새어 조직괴사 없음.'},
+{id:42,week:11,diff:3,type:'single',
+q:'혈관 카테터 파손 발생 시 절대로 해서는 안 되는 것은?',
+opts:['파편 위치 확인','즉시 보고','움직이지 않도록 고정','제거한 탐침을 카테터 안으로 다시 삽입','색전 모니터링'],
+ans:[3],
+exp:'제거한 탐침(stylet)을 카테터 안으로 다시 삽입하면 카테터가 잘려 혈관 내로 유입될 수 있어 절대 금지입니다.'},
+
+// ══ 12주차 ══
+{id:43,week:12,diff:1,type:'single',
+q:'중심정맥관 종류 중 기흉(pneumothorax) 위험이 없는 것은?',
+opts:['비터널식(Non-tunneled)','터널식(Tunneled)','PICC','이식형 포트(Implanted Port)','쇄골하 카테터'],
+ans:[2],
+exp:'PICC(말초삽입 중심정맥관): 팔 말초정맥(상완/요측피부정맥)으로 삽입 → 흉부 천자가 없어 기흉 위험 없음.'},
+{id:44,week:12,diff:1,type:'single',
+q:'이식형 포트(Implanted Port)에서만 사용하는 전용 바늘은?',
+opts:['일반 주사침(21G)','Butterfly needle','Huber needle','Spinal needle','Epidural needle'],
+ans:[2],
+exp:'이식형 포트: 피하에 완전 이식된 포트에 Huber needle로만 접근합니다. 일반 바늘 사용 시 포트 막이 손상됩니다.'},
+{id:45,week:12,diff:1,type:'single',
+q:'수혈 전 반드시 실시해야 하는 두 가지 검사는?',
+opts:['혈액형 + 교차시험','혈액형 + 전혈구검사(CBC)','교차시험 + 소변검사','혈액형 + 간기능검사','교차시험 + 흉부 X-ray'],
+ans:[0],
+exp:'수혈 전 필수 검사: ① ABO/Rh 혈액형 검사 + ② 교차시험(Crossmatching). 용혈반응 예방을 위해 반드시 시행합니다.'},
+{id:46,week:12,diff:1,type:'single',
+q:'혈소판(Platelet)의 올바른 보관 온도는?',
+opts:['1~6°C 냉장','–20°C 냉동','실온(20~24°C)','4°C 냉장','–80°C 초냉동'],
+ans:[2],
+exp:'혈소판: 실온 보관. 전혈·농축 적혈구·신선동결혈장(FFP): 1~6°C 냉장 보관.'},
+{id:47,week:12,diff:1,type:'single',
+q:'수혈 시작 후 처음 15분간 주입 속도로 올바른 것은?',
+opts:['5~10 gtt/min','15~20 gtt/min','30~40 gtt/min','60 gtt/min','빠르게 주입'],
+ans:[1],
+exp:'처음 15분: 15~20 gtt/min으로 천천히 주입하며 수혈 반응 관찰. 이상 없으면 이후 속도 높임.'},
+{id:48,week:12,diff:1,type:'single',
+q:'수혈 부작용 중 가장 위험한 것은?',
+opts:['알레르기 반응','발열 반응','용혈 반응(Hemolytic Reaction)','두드러기','오한·떨림'],
+ans:[2],
+exp:'용혈반응: ABO 혈액형 부적합 → 적혈구 파괴 → 혈뇨·저혈압·핍뇨. 가장 위험한 수혈 부작용입니다.'},
+{id:49,week:12,diff:2,type:'single',
+q:'수혈 시 포도당 용액(D5W, 5% dextrose)을 혼합하면 안 되는 이유는?',
+opts:['혈압이 올라가기 때문','적혈구(RBC) 응집을 유발하기 때문','수혈 속도가 빨라지기 때문','통증을 유발하기 때문','혈액이 굳기 때문'],
+ans:[1],
+exp:'D5W는 적혈구 응집을 유발하므로 수혈 시 절대 혼합 금지. 수혈 전·후에는 0.9% 생리식염수(NS)만 사용합니다.'},
+{id:50,week:12,diff:2,type:'single',
+q:'중심정맥관 종류 중 감염 위험이 가장 큰 것은?',
+opts:['터널식(Tunneled)','PICC','이식형 포트(Implanted Port)','비터널식(Non-tunneled)','말초정맥관'],
+ans:[3],
+exp:'비터널식(Non-tunneled): 삽입이 간편하고 주로 단기 사용. 피하터널이 없어 4종류 중 감염 위험이 가장 큽니다.'},
+{id:51,week:12,diff:2,type:'single',
+q:'수혈 부작용 발생 시 공통으로 가장 먼저 해야 하는 처치는?',
+opts:['담당 의사에게 보고','즉시 수혈 중단','산소 공급','해열제 투여','V/S 측정'],
+ans:[1],
+exp:'수혈 부작용 공통 첫 번째 조치: 즉시 수혈 중단 → 생리식염수로 정맥로 유지 → 의사 보고 → V/S 측정.'},
+{id:52,week:12,diff:2,type:'single',
+q:'아나필락시스(Anaphylaxis) 수혈 반응 처치 시 사용하는 응급 약물은?',
+opts:['항히스타민제','아세트아미노펜(해열제)','에피네프린(Epinephrine)','스테로이드','항생제'],
+ans:[2],
+exp:'아나필락시스: 즉시 수혈 중단 → NS 정맥로 유지 → 기도 유지 → 산소 공급 → 에피네프린(epinephrine) 투여.'},
+{id:53,week:12,diff:2,type:'single',
+q:'중심정맥관(CVC) 드레싱 시 소독 방향으로 올바른 것은?',
+opts:['바깥쪽에서 중심(삽입부위) 방향','중심(삽입부위)에서 바깥쪽 방향','위에서 아래로','아래에서 위로','원형으로 닦음'],
+ans:[1],
+exp:'CVC 드레싱: 삽입 부위(중심)에서 바깥쪽으로 원심성 방향으로 닦습니다. 오염된 바깥쪽 균이 중심부로 오지 않도록 하기 위해서입니다.'},
+{id:54,week:12,diff:3,type:'single',
+q:'수혈 시작 후 첫 1시간 동안 V/S를 측정하는 간격은?',
+opts:['5분마다','10분마다','15분마다','30분마다','1시간마다'],
+ans:[2],
+exp:'첫 1시간: 15분마다 V/S 측정. 이후: 30분마다 측정. 수혈 시작 초기에 반응이 많이 나타나므로 집중 관찰.'},
+{id:55,week:12,diff:3,type:'multi',
+q:'1~6°C 냉장 보관이 필요한 혈액 제제를 모두 고르시오. (복수정답)',
+opts:['전혈(Whole Blood)','농축 적혈구(Packed RBC)','혈소판','신선동결혈장(FFP)','혈소판풍부혈장'],
+ans:[0,1,3],
+exp:'냉장(1~6°C): 전혈·농축 적혈구·신선동결혈장(FFP). 혈소판 및 혈소판풍부혈장: 실온 보관. 냉장 반출 후 20분 이상 경과 시 재보관 금지.'},
+{id:56,week:12,diff:3,type:'short',
+q:'중심정맥관(CVC) 채혈 절차에서 가장 먼저 버려야 하는 혈액량은?',
+keys:['5cc','5ml','5mL','5','다섯'],
+exp:'CVC 채혈 순서: 5cc 버림 → 채취 → NS 관류 → 헤파린. 처음 5cc를 버리는 이유는 정체된 혈액과 헤파린을 제거하기 위해서입니다.'},
+
+// ══ 14주차 ══
+{id:57,week:14,diff:1,type:'single',
+q:'간호과정(Nursing Process) 5단계의 올바른 순서는?',
+opts:['사정→계획→진단→수행→평가','사정→진단→계획→수행→평가','진단→사정→계획→수행→평가','사정→진단→수행→계획→평가','계획→사정→진단→수행→평가'],
+ans:[1],
+exp:'간호과정 5단계: 사정(Assessment) → 진단(Diagnosis) → 계획(Planning) → 수행(Implementation) → 평가(Evaluation). 순환적 과정.'},
+{id:58,week:14,diff:1,type:'single',
+q:'간호진단 4가지 유형 중 "위험요인은 있으나 아직 문제(반응)가 나타나지 않은" 유형은?',
+opts:['실재적 간호진단','위험 간호진단','안녕 간호진단','가능한 간호진단','의학적 진단'],
+ans:[1],
+exp:'위험 간호진단: 위험요인은 존재하나 불건강한 반응은 아직 일어나지 않음. 진단명에 "위험성"이 붙음. 예방 방향으로 간호합니다.'},
+{id:59,week:14,diff:1,type:'single',
+q:'PES 형식의 간호진단 진술 순서로 올바른 것은?',
+opts:['P(문제) → E(원인) → S(증상·징후)','E(원인) → P(문제) → S(증상·징후)','S(증상·징후) → E(원인) → P(문제)','P(문제) → S(증상·징후) → E(원인)','E(원인) → S(증상·징후) → P(문제)'],
+ans:[2],
+exp:'PES 진술 순서: [S]로 나타나는 [E]와 관련된 [P]. 예: "체온상승·빈호흡으로 나타나는 탈수와 관련된 고체온"'},
+{id:60,week:14,diff:1,type:'single',
+q:'간호진단과 의학적 진단의 가장 큰 차이점은?',
+opts:['간호진단은 질병·병리 상태를 기술한다','간호진단은 대상자의 반응을 기술한다','의학적 진단이 더 포괄적이다','둘 다 동일한 내용을 기술한다','간호진단은 의사만 내릴 수 있다'],
+ans:[1],
+exp:'간호진단 = 질병이 아닌 대상자의 반응(인간 반응)을 판단. 의학적 진단 = 질병·병리 상태 기술.'},
+{id:61,week:14,diff:2,type:'single',
+q:'간호사정 4단계를 올바른 순서로 나열한 것은?',
+opts:['분류→수집→확인→기록','수집→확인→분류→기록','수집→분류→확인→기록','확인→수집→분류→기록','기록→수집→확인→분류'],
+ans:[1],
+exp:'간호사정 4단계: 자료 수집 → 확인 → 분류 → 기록. 수집된 자료를 확인하고, 확인된 자료를 분류한 후 기록합니다.'},
+{id:62,week:14,diff:2,type:'multi',
+q:'간호진단 오류 방지 원칙에 해당하는 것을 모두 고르시오. (복수정답)',
+opts:['의학적 진단이 아닌 대상자의 반응 규명','NANDA 진단명 사용','진단 진술 시 대상자의 1가지 문제만 규명','간호사 자신의 문제 규명','간호중재 가능한 원인 규명'],
+ans:[0,1,2,4],
+exp:'오류 방지: 대상자 반응 기술, NANDA 진단명, 1가지 문제만, 간호중재 가능한 원인. 간호사 문제가 아닌 대상자 문제를 규명해야 합니다.'},
+{id:63,week:14,diff:2,type:'single',
+q:'PES 예시 "체온상승·빈호흡으로 나타나는 탈수와 관련된 고체온"에서 P(Problem, 문제)에 해당하는 것은?',
+opts:['체온상승','빈호흡','탈수','고체온','관련된'],
+ans:[3],
+exp:'P(문제) = 고체온. E(원인) = 탈수. S(증상·징후) = 체온상승·빈호흡. 순서: S로 나타나는 E와 관련된 P.'},
+{id:64,week:14,diff:2,type:'single',
+q:'간호사정 자료 수집에서 주관적 자료(Subjective data)에 해당하는 것은?',
+opts:['혈압 140/90 mmHg','체온 38.5°C','"머리가 너무 아파요"','호흡수 22회/분','혈당 250 mg/dL'],
+ans:[2],
+exp:'주관적 자료(S): 대상자가 직접 말하는 증상·느낌. 객관적 자료(O): 측정·관찰 가능한 수치·징후. 혈압·체온·호흡수·혈당 = 객관적 자료.'},
+{id:65,week:14,diff:2,type:'single',
+q:'신체검진의 4가지 방법을 올바른 순서로 나열한 것은?',
+opts:['시진→청진→촉진→타진','시진→촉진→타진→청진','촉진→시진→타진→청진','시진→타진→촉진→청진','청진→시진→촉진→타진'],
+ans:[1],
+exp:'신체검진 기본 순서: 시진(Inspection) → 촉진(Palpation) → 타진(Percussion) → 청진(Auscultation). 단, 복부 사정 시 시진 → 청진 → 타진 → 촉진 순서로 합니다.'},
+{id:66,week:14,diff:3,type:'single',
+q:'안녕 간호진단(Wellness Nursing Diagnosis)의 특징으로 옳은 것은?',
+opts:['위험요인이 반드시 있어야 한다','진단명에 "위험성"이 붙는다','증상·징후(S)가 현재 있어야 한다','더 높은 안녕수준으로의 이행가능성이 있다','우리나라에서는 사용하지 않는다'],
+ans:[3],
+exp:'안녕 간호진단: 더 높은 안녕수준으로 이행 가능성이 있을 때. 진단명에 "증진가능성" 접두사. 건강 문제가 있는 환자에게도 사용 가능.'},
+{id:67,week:14,diff:3,type:'short',
+q:'간호진단 4가지 유형 중 우리나라에서 간호진단으로 진술하지 않는 유형은?',
+keys:['가능한','가능한 간호진단'],
+exp:'가능한 간호진단: 자료가 있으나 증거 불명확·원인 미상. 추가 자료 수집이 필요한 상태. 우리나라에서는 간호진단으로 진술하지 않습니다.'},
+
+// ══ 15주차 ══
+{id:68,week:15,diff:1,type:'single',
+q:'목표진술 7가지 지침 중 "대상자와 함께 목표를 설정한다"는 어떤 지침인가?',
+opts:['현실성','측정가능성','상호성','단일성','시간제한성'],
+ans:[2],
+exp:'상호성: 대상자와 함께 목표 설정 → 대상자의 동기화·협조 증가. 7가지: 대·단·관·측·시·상·현.'},
+{id:69,week:15,diff:1,type:'single',
+q:'간호중재 3종류 중 "의사의 처방에 따라 수행하는" 유형은?',
+opts:['독자적 중재','협동적 중재','의존적 중재','독립적 중재','자율적 중재'],
+ans:[2],
+exp:'의존적 중재: 의사의 처방에 따라 수행 (예: 처방된 약물 투여). 독자적 중재: 면허 범위 내 독자적 수행. 협동적 중재: 타 전문인과 공동 수행.'},
+{id:70,week:15,diff:1,type:'single',
+q:'간호평가 3단계를 올바른 순서로 나열한 것은?',
+opts:['진행평가→목표성취→질향상','질향상→진행평가→목표성취','목표성취→진행평가→질향상','목표성취→질향상→진행평가','진행평가→질향상→목표성취'],
+ans:[2],
+exp:'간호평가 3단계: 목표성취(달성 여부) → 진행평가(계속·중지·수정 결정) → 질향상(구조·과정·결과 평가).'},
+{id:71,week:15,diff:1,type:'single',
+q:'목표진술에서 측정가능성(④ 지침)을 위반하는 모호한 표현은?',
+opts:['"80~120 mg/dL 범위를 유지할 것이다"','"퇴원 전까지 시연할 것이다"','"정상적인 혈당이 될 것이다"','"NRS 3 이하로 통증을 보고할 것이다"','"24시간 이내에 체온이 37.5°C 이하로 될 것이다"'],
+ans:[2],
+exp:'"정상적인"은 모호한 표현으로 측정가능성 위반. "80~120 mg/dL", "NRS 3 이하", "37.5°C 이하"는 구체적·측정 가능합니다.'},
+{id:72,week:15,diff:2,type:'single',
+q:'간호계획의 4단계를 올바른 순서로 나열한 것은?',
+opts:['목표설정→우선순위→중재선택→기록','우선순위설정→목표진술→중재선택→기록','우선순위→중재→목표→기록','중재→우선순위→목표→기록','기록→목표→중재→우선순위'],
+ans:[1],
+exp:'간호계획 4단계: 우선순위 설정 → 목표 진술 → 간호중재 선택 → 계획 기록.'},
+{id:73,week:15,diff:2,type:'single',
+q:'간호수행(Nursing Implementation)의 3단계를 올바른 순서로 나열한 것은?',
+opts:['수행→준비→수정·기록','준비→수행→수정·기록','준비→수정·기록→수행','수행→수정·기록→준비','수정→준비→수행'],
+ans:[1],
+exp:'간호수행 3단계: 준비(중재 검토·자원·환경) → 수행(인지적·대인관계·전문적 기술) → 수정·기록.'},
+{id:74,week:15,diff:2,type:'single',
+q:'간호계획 우선순위에서 "상(최우선)"에 해당하는 것은?',
+opts:['학습 요구','사회적 관계 문제','안전에 위협이 되는 문제','정서적·심리적 문제','경제적 문제'],
+ans:[2],
+exp:'우선순위 상(최우선): 안전에 위협이 되는 문제(생명 위협·기도 폐쇄 등). 중: 건강에 영향을 주는 문제. 하: 학습·사회적 요구.'},
+{id:75,week:15,diff:2,type:'multi',
+q:'간호중재 유형과 예시가 올바르게 연결된 것을 모두 고르시오. (복수정답)',
+opts:['독자적 중재 - 대상자 체위 변경','협동적 중재 - 물리치료사와 재활 운동 계획 수립','의존적 중재 - 의사 처방에 따른 약물 투여','독자적 중재 - 의사 처방 없이 마약성 진통제 투여','협동적 중재 - 간호사 혼자 드레싱 교환'],
+ans:[0,1,2],
+exp:'독자적: 면허 범위 내 독자적 중재(체위 변경). 협동적: 타 전문인과 협력(물리치료사와 공동 계획). 의존적: 의사 처방 따름(처방된 약물 투여).'},
+{id:76,week:15,diff:2,type:'single',
+q:'목표진술에서 잘못된 예시 "기침과 배액을 줄일 것이다"가 위반하는 지침은?',
+opts:['대상자 중심','단일성','관찰가능성','측정가능성','시간제한성'],
+ans:[1],
+exp:'단일성 위반: 한 목표에 2가지 이상의 행위(기침 감소 + 배액 감소)가 포함되어 있습니다. 각각 분리하여 진술해야 합니다.'},
+{id:77,week:15,diff:3,type:'multi',
+q:'다음 중 측정가능성(④ 지침) 위반에 해당하는 목표진술을 모두 고르시오. (복수정답)',
+opts:['"대상자는 혈당이 정상적 범위가 될 것이다"','"대상자는 충분한 수분을 섭취할 것이다"','"대상자는 3일 이내에 혈당이 80~120 mg/dL를 유지할 것이다"','"대상자는 안정된 활력징후를 보일 것이다"','"대상자는 퇴원 전까지 인슐린 자가주사를 시연할 것이다"'],
+ans:[0,1,3],
+exp:'측정가능성 위반 표현: "정상적인"·"충분한"·"안정된" 등 모호한 용어. "80~120 mg/dL", "퇴원 전까지 시연"은 구체적이므로 올바른 표현입니다.'},
+{id:78,week:15,diff:3,type:'single',
+q:'간호평가에서 질 향상(Quality Improvement) 평가의 3가지 기준은?',
+opts:['구조·과정·결과','목표·중재·수행','사정·진단·계획','단기·중기·장기 목표','투입·산출·성과'],
+ans:[0],
+exp:'질 향상 평가 3기준: 구조(시설·인력·정책) → 과정(간호 제공 방식: 동시·소급평가) → 결과(대상자 건강 상태 변화).'},
+{id:79,week:15,diff:3,type:'short',
+q:'과정 평가(Process evaluation) 중 동시평가와 소급평가의 차이점을 적으시오.',
+keys:['입원','퇴원','동시','소급','재원'],
+exp:'동시평가: 대상자가 입원 중일 때 직접 관찰. 소급평가: 퇴원 후 의무기록(chart) 검토나 면담으로 평가. 소급평가가 비용·시간이 절약됩니다.'},
+{id:80,week:15,diff:3,type:'short',
+q:'NIC가 무엇의 약자인지 영어로 적고, 그 구성(영역 수 - 세목 수 - 중재 수)을 숫자로 적으시오.',
+keys:['nursing interventions classification','7','30','554','7영역','30세목'],
+exp:'NIC = Nursing Interventions Classification(간호중재분류). 구성: 7영역 - 30세목 - 554중재.'},
+];
+
+// ─── QUIZ STATE ───────────────────────────────────────────────────────────────
+let state = {
+  started: false,
+  finished: false,
+  current: null,
+  difficulty: 1,
+  answered: false,
+  streakCorrect: 0,
+  streakWrong: 0,
+  used: new Set(),
+  totalAnswered: 0,
+  totalCorrect: 0,
+  diffStats: {1:{correct:0,total:0},2:{correct:0,total:0},3:{correct:0,total:0}},
+  selectedOpts: new Set(),
+  shortVal: '',
+  wrongQuestions: [],
+  shuffleMap: null,
+};
+const TOTAL = 30; // 퀴즈당 문제 수
+const STREAK_UP = 3;
+const STREAK_DOWN = 2;
+
+function diffLabel(d){return d===1?'기본':d===2?'중급':'고급'}
+function diffClass(d){return d===1?'diff-1':d===2?'diff-2':'diff-3'}
+function typeLabel(t){return t==='single'?'단일정답':t==='multi'?'복수정답':'주관식'}
+
+function shuffleIndices(n){
+  const a=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function getPool(diff){
+  return QUESTIONS.filter(q=>q.diff===diff && !state.used.has(q.id));
+}
+
+function pickQuestion(){
+  let pool = getPool(state.difficulty);
+  if(pool.length===0){
+    // 현재 난이도 소진 → 인접 난이도로 확장
+    const allLeft = QUESTIONS.filter(q=>!state.used.has(q.id));
+    if(allLeft.length===0) return null;
+    const diffs = [state.difficulty-1, state.difficulty+1, 1, 2, 3];
+    for(const d of diffs){
+      pool = allLeft.filter(q=>q.diff===d);
+      if(pool.length>0) break;
+    }
+  }
+  if(pool.length===0) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function checkAnswer(){
+  const q = state.current;
+  if(q.type==='short'){
+    const val = state.shortVal.trim().toLowerCase();
+    return q.keys.some(k=>val.includes(k.toLowerCase()));
+  }
+  // display position → original index via shuffleMap
+  const selOrig = [...state.selectedOpts].map(di=>state.shuffleMap[di]).sort((a,b)=>a-b);
+  const ans = [...q.ans].sort((a,b)=>a-b);
+  return selOrig.length===ans.length && selOrig.every((v,i)=>v===ans[i]);
+}
+
+function nextQuestion(){
+  const q = pickQuestion();
+  if(!q || state.totalAnswered >= TOTAL){
+    state.finished = true;
+    render();
+    return;
+  }
+  state.current = q;
+  state.used.add(q.id);
+  state.answered = false;
+  state.selectedOpts = new Set();
+  state.shortVal = '';
+  state.shuffleMap = q.type==='short' ? null : shuffleIndices(q.opts.length);
+  render();
+}
+
+function submitAnswer(){
+  if(!state.answered){
+    state.answered = true;
+    const correct = checkAnswer();
+    state.totalAnswered++;
+    state.diffStats[state.difficulty].total++;
+    if(correct){
+      state.totalCorrect++;
+      state.diffStats[state.difficulty].correct++;
+      state.streakCorrect++;
+      state.streakWrong=0;
+      if(state.streakCorrect>=STREAK_UP && state.difficulty<3){
+        state.difficulty++;
+        state.streakCorrect=0;
+      }
+    } else {
+      state.wrongQuestions.push(state.current);
+      state.streakWrong++;
+      state.streakCorrect=0;
+      if(state.streakWrong>=STREAK_DOWN && state.difficulty>1){
+        state.difficulty--;
+        state.streakWrong=0;
+      }
+    }
+    render();
+  }
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render(){
+  const app = document.getElementById('app');
+  if(!state.started){ app.innerHTML = renderStart(); bindStart(); return; }
+  if(state.finished){ app.innerHTML = renderResult(); bindRestart(); return; }
+  app.innerHTML = renderQuiz();
+  bindQuiz();
+}
+
+function renderStart(){
+  const d1=QUESTIONS.filter(q=>q.diff===1).length;
+  const d2=QUESTIONS.filter(q=>q.diff===2).length;
+  const d3=QUESTIONS.filter(q=>q.diff===3).length;
+  return `
+<div class="header"><h1>기본간호학1 적응형 퀴즈</h1><p>8주차 ~ 15주차 · 80문항 데이터베이스</p></div>
+<div class="start">
+  <h2>퀴즈를 시작합니다</h2>
+  <p>총 ${TOTAL}문제를 풀게 됩니다.<br>실력에 따라 난이도가 자동으로 조절됩니다.</p>
+  <div class="start-grid">
+    <div class="start-cell"><div class="start-cell-n n-green">${d1}</div><div class="start-cell-l">🟢 기본 문제</div></div>
+    <div class="start-cell"><div class="start-cell-n n-blue">${d2}</div><div class="start-cell-l">🔵 중급 문제</div></div>
+    <div class="start-cell"><div class="start-cell-n n-pink">${d3}</div><div class="start-cell-l">🔴 고급 문제</div></div>
+  </div>
+  <div class="algo-box">
+    <strong>적응형 알고리즘</strong><br>
+    ✅ 3문제 연속 정답 → <strong>난이도 상승</strong><br>
+    ❌ 2문제 연속 오답 → <strong>난이도 하강</strong><br>
+    🎯 현재 실력에 맞는 문제를 자동으로 선택합니다.<br>
+    📚 주관식(복수정답 포함)이 중간중간 출제됩니다.
+  </div>
+  <button class="btn btn-primary" id="startBtn" style="padding:14px 48px;font-size:1.05rem">시작하기</button>
+</div>`;
+}
+
+function renderQuiz(){
+  const q = state.current;
+  const prog = Math.round((state.totalAnswered/TOTAL)*100);
+  const streakIcon = state.streakCorrect>0?`🔥 ${state.streakCorrect}연속 정답`:'';
+
+  let optHtml='';
+  if(q.type==='short'){
+    const cls = state.answered ? (checkAnswer()?'correct-input':'wrong-input') : '';
+    optHtml=`<input type="text" class="short-input ${cls}" id="shortInput" placeholder="답을 입력하세요" value="${esc(state.shortVal)}" ${state.answered?'disabled':''}>`;
+  } else {
+    const inputType = q.type==='multi'?'checkbox':'radio';
+    optHtml='<div class="options">';
+    state.shuffleMap.forEach((origI,displayI)=>{
+      const opt = q.opts[origI];
+      let cls='option';
+      if(state.answered){
+        if(q.ans.includes(origI)) cls+=' correct';
+        else if(state.selectedOpts.has(displayI)&&!q.ans.includes(origI)) cls+=' wrong';
+      } else {
+        if(state.selectedOpts.has(displayI)) cls+=' selected';
+      }
+      optHtml+=`<label class="${cls}">
+        <input type="${inputType}" name="opt" value="${displayI}" ${state.selectedOpts.has(displayI)?'checked':''} ${state.answered?'disabled':''} data-idx="${displayI}">
+        <span class="option-text">${['①','②','③','④','⑤'][displayI]} ${esc(opt)}</span>
+      </label>`;
+    });
+    optHtml+='</div>';
+  }
+
+  let feedbackHtml='';
+  if(state.answered){
+    const correct = checkAnswer();
+    feedbackHtml=`<div class="feedback ${correct?'correct-fb':'wrong-fb'}">
+      <div class="feedback-title">${correct?'✅ 정답입니다!':'❌ 오답입니다'}</div>
+      <div class="feedback-exp">${esc(q.exp)}</div>
+    </div>`;
+  }
+
+  const hintHtml = q.type==='multi'&&!state.answered?`<div class="q-hint">💡 복수 정답 — 해당하는 것을 모두 선택하세요</div>`:'';
+  const shortHint = q.type==='short'&&!state.answered?`<div class="q-hint">✍️ 주관식 — 핵심 키워드를 포함하여 답하세요</div>`:'';
+
+  const submitDisabled = !state.answered && (q.type==='short'?state.shortVal.trim()==='':(state.selectedOpts.size===0));
+
+  return `
+<div class="header"><h1>기본간호학1 퀴즈</h1></div>
+<div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+<div class="progress-meta"><span>${state.totalAnswered} / ${TOTAL} 문제</span><span>정답률 ${state.totalAnswered>0?Math.round(state.totalCorrect/state.totalAnswered*100):0}%</span></div>
+<div class="diff-row">
+  <span class="diff-badge ${diffClass(state.difficulty)}">${diffLabel(state.difficulty)}</span>
+  <span class="week-badge">${q.week}주차</span>
+  <span class="type-badge">${typeLabel(q.type)}</span>
+  ${state.streakCorrect>0?`<span class="streak-badge">${streakIcon}</span>`:''}
+</div>
+<div class="card">
+  <div class="q-num">Q${state.totalAnswered+1}</div>
+  <div class="q-text">${esc(q.q)}</div>
+  ${hintHtml}${shortHint}
+  ${optHtml}
+  ${feedbackHtml}
+  <div class="btn-row">
+    ${!state.answered?`<button class="btn btn-primary" id="submitBtn" ${submitDisabled?'disabled':''}>확인</button>`:''}
+    ${state.answered?`<button class="btn btn-next" id="nextBtn">${state.totalAnswered>=TOTAL?'결과 보기':'다음 문제 →'}</button>`:''}
+  </div>
+</div>`;
+}
+
+function renderResult(){
+  const pct = Math.round(state.totalCorrect/state.totalAnswered*100);
+  let grade='', msg='';
+  if(pct>=90){grade='S';msg='완벽합니다! 기본간호학1 마스터 수준이에요. 시험 걱정 없습니다 💪';}
+  else if(pct>=80){grade='A';msg='훌륭해요! 핵심 내용을 잘 이해하고 있습니다. 틀린 문제만 복습하세요.';}
+  else if(pct>=70){grade='B';msg='잘 했습니다! 조금 더 복습하면 완벽해질 거예요.';}
+  else if(pct>=60){grade='C';msg='기본기를 다시 다져봅시다. 오답 노트를 활용해 보세요.';}
+  else{grade='D';msg='포기하지 마세요! Wiki 노트를 다시 읽고 재도전해보세요.';}
+
+  const ds = state.diffStats;
+  const maxDiff = state.used.size>0 ? Math.max(...[...state.used].map(id=>QUESTIONS.find(q=>q.id===id).diff)) : 1;
+
+  return `
+<div class="header"><h1>기본간호학1 퀴즈</h1></div>
+<div class="card result">
+  <div style="font-size:1rem;color:#94a3b8">최종 결과</div>
+  <div class="result-score">${pct}%</div>
+  <div class="result-label">${state.totalCorrect} / ${state.totalAnswered} 정답 · 등급 <strong style="color:#c7d2fe">${grade}</strong></div>
+  <div class="result-msg">${msg}</div>
+  <div class="result-grid">
+    <div class="result-cell"><div class="result-cell-n">${state.totalCorrect}</div><div class="result-cell-l">정답</div></div>
+    <div class="result-cell"><div class="result-cell-n">${state.totalAnswered-state.totalCorrect}</div><div class="result-cell-l">오답</div></div>
+    <div class="result-cell"><div class="result-cell-n">${diffLabel(maxDiff)}</div><div class="result-cell-l">최고 난이도</div></div>
+  </div>
+  <div class="diff-summary">
+    ${[1,2,3].map(d=>{
+      const s=ds[d];
+      const p=s.total>0?Math.round(s.correct/s.total*100):0;
+      return s.total>0?`<div class="diff-summary-row">
+        <span class="diff-badge ${diffClass(d)}">${diffLabel(d)}</span>
+        <span>${s.correct}/${s.total} 정답 (${p}%)</span>
+      </div>`:''}).join('')}
+  </div>
+  ${state.wrongQuestions.length>0?`<div style="text-align:left;margin-bottom:20px">
+    <div style="font-size:.85rem;color:#94a3b8;margin-bottom:10px">📌 틀린 주차별 분포</div>
+    ${[...new Set(state.wrongQuestions.map(q=>q.week))].sort().map(w=>{
+      const cnt=state.wrongQuestions.filter(q=>q.week===w).length;
+      return `<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#0f172a;border-radius:8px;margin-bottom:6px;font-size:.85rem">
+        <span style="color:#94a3b8">${w}주차</span><span style="color:#f472b6">${cnt}문제 틀림</span></div>`;}).join('')}
+  </div>`:''}
+  <button class="btn-restart" id="restartBtn">다시 풀기</button>
+</div>`;
+}
+
+// ─── BINDING ──────────────────────────────────────────────────────────────────
+function esc(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function bindStart(){
+  document.getElementById('startBtn').onclick=()=>{
+    state.started=true;
+    nextQuestion();
+  };
+}
+
+function bindQuiz(){
+  const q=state.current;
+  if(q.type==='short'){
+    const inp=document.getElementById('shortInput');
+    if(inp){
+      inp.addEventListener('input',e=>{
+        state.shortVal=e.target.value;
+        const sb=document.getElementById('submitBtn');
+        if(sb) sb.disabled=state.shortVal.trim()==='';
+      });
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!state.answered&&state.shortVal.trim()!=='') submitAnswer();});
+    }
+  } else {
+    document.querySelectorAll('input[name="opt"]').forEach(inp=>{
+      inp.addEventListener('change',e=>{
+        const idx=parseInt(e.target.dataset.idx);
+        if(q.type==='single'){
+          state.selectedOpts=new Set([idx]);
+          document.querySelectorAll('.option').forEach((el,i)=>{
+            el.classList.toggle('selected',i===idx);
+          });
+        } else {
+          if(e.target.checked) state.selectedOpts.add(idx);
+          else state.selectedOpts.delete(idx);
+          e.target.closest('.option').classList.toggle('selected',e.target.checked);
+        }
+        const sb=document.getElementById('submitBtn');
+        if(sb) sb.disabled=state.selectedOpts.size===0;
+      });
+    });
+  }
+  const sb=document.getElementById('submitBtn');
+  if(sb) sb.onclick=submitAnswer;
+  const nb=document.getElementById('nextBtn');
+  if(nb) nb.onclick=()=>{
+    if(state.totalAnswered>=TOTAL){state.finished=true;render();}
+    else nextQuestion();
+  };
+}
+
+function bindRestart(){
+  document.getElementById('restartBtn').onclick=()=>{
+    state={started:false,finished:false,current:null,difficulty:1,answered:false,
+      streakCorrect:0,streakWrong:0,used:new Set(),totalAnswered:0,totalCorrect:0,
+      diffStats:{1:{correct:0,total:0},2:{correct:0,total:0},3:{correct:0,total:0}},
+      selectedOpts:new Set(),shortVal:'',wrongQuestions:[],shuffleMap:null};
+    render();
+  };
+}
+
+render();
+</script>
+</body>
+</html>
