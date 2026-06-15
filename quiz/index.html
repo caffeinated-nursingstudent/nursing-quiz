@@ -958,7 +958,7 @@ let state = {
   wrongQuestions: [],
   shuffleMap: null,
 };
-const TOTAL = 30; // 퀴즈당 문제 수
+const TOTAL = 40; // 퀴즈당 문제 수
 const STREAK_UP = 3;
 const STREAK_DOWN = 2;
 
@@ -1065,7 +1065,7 @@ function renderStart(){
 <div class="header"><h1>기본간호학1 적응형 퀴즈</h1><p>8주차 ~ 15주차 · 160문항 데이터베이스</p></div>
 <div class="start">
   <h2>퀴즈를 시작합니다</h2>
-  <p>총 ${TOTAL}문제를 풀게 됩니다.<br>실력에 따라 난이도가 자동으로 조절됩니다.</p>
+  <p>총 ${TOTAL}문제를 풀게 됩니다. (데이터베이스: 160문항)<br>실력에 따라 난이도가 자동으로 조절됩니다.</p>
   <div class="start-grid">
     <div class="start-cell"><div class="start-cell-n n-green">${d1}</div><div class="start-cell-l">🟢 기본 문제</div></div>
     <div class="start-cell"><div class="start-cell-n n-blue">${d2}</div><div class="start-cell-l">🔵 중급 문제</div></div>
