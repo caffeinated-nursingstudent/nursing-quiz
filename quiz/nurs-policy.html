@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>간호정책 적응형 퀴즈 (9·11·12·13주차)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:20px}
+#app{max-width:760px;margin:0 auto}
+.header{text-align:center;padding:28px 0 18px}
+.header h1{font-size:1.55rem;font-weight:700;color:#f1f5f9;letter-spacing:-.5px}
+.header p{color:#94a3b8;font-size:.85rem;margin-top:6px}
+.progress-bar{background:#1e293b;border-radius:99px;height:8px;overflow:hidden;margin:14px 0 6px}
+.progress-fill{height:100%;border-radius:99px;transition:width .4s;background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.progress-meta{display:flex;justify-content:space-between;font-size:.78rem;color:#64748b}
+.diff-row{display:flex;gap:10px;align-items:center;margin:16px 0 10px;flex-wrap:wrap}
+.diff-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:.78rem;font-weight:700;letter-spacing:.3px}
+.diff-1{background:#1e3a2e;color:#4ade80;border:1px solid #166534}
+.diff-2{background:#1e2f4a;color:#60a5fa;border:1px solid #1d4ed8}
+.diff-3{background:#3a1e2e;color:#f472b6;border:1px solid #9d174d}
+.streak-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#1e293b;color:#fbbf24;border:1px solid #78350f}
+.week-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.type-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#2e1e3a;color:#c084fc;border:1px solid #6d28d9}
+.card{background:#1e293b;border-radius:16px;padding:28px 28px 24px;margin-bottom:16px;border:1px solid #334155}
+.q-num{font-size:.78rem;color:#64748b;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.q-text{font-size:1.05rem;line-height:1.7;color:#f1f5f9;font-weight:500}
+.q-hint{font-size:.8rem;color:#6366f1;margin-top:8px;font-style:italic}
+.options{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:10px;border:1.5px solid #334155;cursor:pointer;transition:all .18s;background:#0f172a}
+.option:hover{border-color:#6366f1;background:#1e1e3a}
+.option.selected{border-color:#6366f1;background:#1e1e3a}
+.option.correct{border-color:#22c55e!important;background:#0d2a1a!important}
+.option.wrong{border-color:#ef4444!important;background:#2a0d0d!important}
+.option input{accent-color:#6366f1;margin-top:2px;flex-shrink:0;width:17px;height:17px}
+.option-text{font-size:.95rem;line-height:1.5;color:#cbd5e1}
+.short-input{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:10px;padding:13px 16px;color:#f1f5f9;font-size:.95rem;margin-top:18px;outline:none;transition:border-color .2s;font-family:inherit}
+.short-input:focus{border-color:#6366f1}
+.short-input.correct-input{border-color:#22c55e!important}
+.short-input.wrong-input{border-color:#ef4444!important}
+.btn{padding:12px 28px;border-radius:10px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;transform:none;cursor:not-allowed}
+.btn-next{background:#1e293b;color:#e2e8f0;border:1.5px solid #475569}
+.btn-next:hover{border-color:#6366f1;color:#c7d2fe}
+.btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.feedback{padding:16px 18px;border-radius:10px;margin-top:16px;line-height:1.6;font-size:.9rem}
+.feedback.correct-fb{background:#0d2a1a;border:1px solid #166534;color:#86efac}
+.feedback.wrong-fb{background:#2a0d0d;border:1px solid #991b1b;color:#fca5a5}
+.feedback-title{font-weight:700;font-size:1rem;margin-bottom:6px}
+.feedback-exp{color:#cbd5e1;margin-top:8px;font-size:.88rem;line-height:1.65}
+.result{text-align:center;padding:40px 20px}
+.result-score{font-size:3.5rem;font-weight:800;background:linear-gradient(135deg,#6366f1,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:18px 0 8px}
+.result-label{font-size:1rem;color:#94a3b8;margin-bottom:24px}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+.result-cell{background:#1e293b;border-radius:12px;padding:18px 10px;border:1px solid #334155}
+.result-cell-n{font-size:1.8rem;font-weight:700;color:#f1f5f9}
+.result-cell-l{font-size:.78rem;color:#64748b;margin-top:4px}
+.result-msg{font-size:1.1rem;color:#e2e8f0;margin:10px 0 24px;line-height:1.6}
+.diff-summary{display:flex;flex-direction:column;gap:8px;margin:16px 0 28px;text-align:left}
+.diff-summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1e293b;border-radius:8px;font-size:.88rem}
+.btn-restart{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 36px;border-radius:12px;border:none;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.btn-restart:hover{opacity:.88}
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 24px}
+.mode-tab{background:#1e293b;border:2px solid #334155;border-radius:14px;padding:18px 16px;cursor:pointer;font-family:inherit;text-align:center;transition:all .2s;width:100%}
+.mode-tab:hover{border-color:#6366f1}
+.mode-tab.active{border-color:#6366f1;background:#1e1e3a}
+.mode-tab-title{font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.mode-tab-sub{font-size:.78rem;color:#64748b}
+.mode-tab.active .mode-tab-sub{color:#94a3b8}
+.start{text-align:center;padding:50px 20px}
+.start h2{font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-bottom:12px}
+.start p{color:#94a3b8;font-size:.92rem;line-height:1.7;margin-bottom:10px}
+.start-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}
+.start-cell{background:#1e293b;border-radius:12px;padding:18px 10px;border:1px solid #334155}
+.start-cell-n{font-size:1.6rem;font-weight:700}
+.start-cell-l{font-size:.78rem;color:#64748b;margin-top:6px}
+.n-green{color:#4ade80}.n-blue{color:#60a5fa}.n-pink{color:#f472b6}
+.algo-box{background:#1e293b;border-radius:12px;padding:18px 20px;text-align:left;margin:0 0 28px;border:1px solid #334155;font-size:.85rem;line-height:1.75;color:#94a3b8}
+.algo-box strong{color:#c7d2fe}
+@media(max-width:480px){
+  .card{padding:20px 16px}
+  .diff-row{gap:6px}
+  .diff-badge,.streak-badge,.week-badge,.type-badge{padding:4px 10px;font-size:.72rem}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const QUESTIONS = [
+// ══ 9주차 — 정책의제 설정 ══
+{id:1,week:9,diff:1,type:'single',
+q:'정책의제(policy agenda)의 정의로 가장 옳은 것은?',
+opts:['사회문제 중 정부가 공식 채택하여 해결하려는 문제','모든 사회 구성원이 공통으로 느끼는 불만','언론이 보도하는 모든 사회 이슈','의회에서 통과된 법률','국민 청원에 접수된 요구 사항'],
+ans:[0],
+exp:'정책의제 = 사회문제 중 정부가 공식 채택한 문제, 또는 의도적 의사결정 체계가 적극적으로 고려할 구체적 항목입니다.'},
+
+{id:2,week:9,diff:1,type:'single',
+q:'사회문제가 정책의제로 채택되는 단계의 올바른 순서는?',
+opts:['사회문제→사회적 이슈→공중의제→정책문제→정책의제','사회문제→공중의제→사회적 이슈→정책문제→정책의제','사회적 이슈→사회문제→공중의제→정책의제→정책문제','공중의제→사회문제→사회적 이슈→정책문제→정책의제','정책문제→사회문제→사회적 이슈→공중의제→정책의제'],
+ans:[0],
+exp:'사회문제(결함·기대괴리 사건 장기 발생) → 사회적 이슈(성격·해결법 두고 집단 간 견해차·다툼) → 공중의제(대중 주목·정부해결 정당성 인식) → 정책문제(정부가 해결 의향) → 정책의제(정책적 해결 의도로 공식 채택)'},
+
+{id:3,week:9,diff:1,type:'single',
+q:'킹돈(Kingdon)의 다중흐름모형에서 정책의 창(policy window)이 열리기 위해 결합되어야 하는 세 가지 흐름은?',
+opts:['문제의 흐름·정책의 흐름·정치의 흐름','문제의 흐름·여론의 흐름·경제의 흐름','정치의 흐름·경제의 흐름·언론의 흐름','여론의 흐름·정책의 흐름·법적 흐름','문제의 흐름·정치의 흐름·재정의 흐름'],
+ans:[0],
+exp:'킹돈 다중흐름모형: 문제의 흐름(problem) + 정책의 흐름(policy) + 정치의 흐름(political)이 결합될 때 정책의 창이 열립니다.'},
+
+{id:4,week:9,diff:2,type:'single',
+q:'다중흐름모형에서 \'정책의 창(policy window)\'이 닫히는 경우로 옳지 않은 것은?',
+opts:['문제가 해결되었다고 인식될 때','법령이 제정될 때','사건이 소멸될 때','인사이동이 있을 때','세 흐름이 모두 강하게 결합될 때'],
+ans:[4],
+exp:'정책의 창이 닫히는 경우: 문제 해결 인식, 법령 제정, 사건 소멸, 인사이동, 의사이동, 결합 실패 등. 세 흐름이 결합되면 창이 열리는 것이지 닫히는 것이 아닙니다.'},
+
+{id:5,week:9,diff:2,type:'single',
+q:'Bachrach & Baratz의 무의사결정론(Non-decision Making)에서 \'무의사결정\'이란?',
+opts:['정부가 우선순위가 낮은 문제를 방치하는 것','엘리트·정치집단이 자신들의 이익에 반하는 요구나 의견을 억압·봉쇄하는 결정','국민이 정책 참여를 자발적으로 포기하는 것','의회에서 투표를 실시하지 않는 것','집행기관이 정책을 이행하지 않는 것'],
+ans:[1],
+exp:'무의사결정 = 비다원주의·엘리트/정치집단이 조종·통제하여 약소 이익·의견을 무시. 무의사결정 = 대상의 이익을 최소화·종속시키는 결정 / 영향력 행사로 의사조차 차단(F.W. Frey).'},
+
+{id:6,week:9,diff:2,type:'single',
+q:'의제설정 유형 중 \'외부주도형(Type 2)\'의 특징으로 옳은 것은?',
+opts:['내부 결정자가 직접 의제를 생성·구체화하는 방식','사회문제 → 사회적 이슈 → 공중의제 → 정책의제 순으로 전환되는 방식','정부 내부에서 인지하여 공중의제를 거치지 않고 바로 정책의제화','주도집단이 정보를 독점하고 외부에 차단','권력집단이 이익집단 로비를 직접 수행'],
+ans:[1],
+exp:'외부주도형(Type 2): 사회문제의 심각성이 빠르게 인지되어 사회적 이슈 → 공중의제 → 정책의제로 전환. 일반 다원주의 체제에서 비권력 집단도 공개 확산으로 창 개방 가능.'},
+
+{id:7,week:9,diff:1,type:'single',
+q:'미디어 의제설정(Agenda-setting) 이론이 설명하는 것은?',
+opts:['미디어가 대중에게 "무엇을 생각할지(What to think about)"를 결정한다','미디어가 대중에게 "어떻게 생각할지(How to think about)"를 결정한다','대중이 미디어 보도 내용을 직접 결정한다','미디어는 정책결정에 전혀 영향을 미치지 않는다','미디어는 단순 정보 전달 도구에 불과하다'],
+ans:[0],
+exp:'의제설정 이론(McCombs, Shaw, Weaver): 미디어가 무엇을 중요하게 다룰지 결정 → 대중이 무엇을 중요하게 인식할지를 결정. 1수준(객체 중요성 전달), 2수준(속성 중요성 전달).'},
+
+{id:8,week:9,diff:2,type:'single',
+q:'프레이밍(Framing)과 의제설정(Agenda-setting)의 차이로 옳은 것은?',
+opts:['프레이밍은 무엇을 다룰지 결정, 의제설정은 어떻게 생각할지 결정한다','의제설정은 무엇을 중요하게 다룰지 결정, 프레이밍은 어떻게 생각할지 방향을 설정한다','두 개념은 동일한 것을 의미한다','프레이밍은 정책결정자가, 의제설정은 국민이 수행한다','의제설정은 단기, 프레이밍은 장기 효과를 낸다'],
+ans:[1],
+exp:'의제설정 = 미디어가 이슈의 중요성 설정(무엇을 다룰지). 프레이밍 = 사실 일부 선택·강조로 문제 정의·원인 해석·도덕적 평가·해결책 제도 방향 설정(어떻게 생각할지). 종합: 미디어가 이슈 설정 후 논리구조로 인지방향 설계.'},
+
+{id:9,week:9,diff:1,type:'single',
+q:'미디어 리터러시(Media Literacy)의 핵심 목표로 가장 옳은 것은?',
+opts:['미디어 콘텐츠를 빠르게 소비하는 능력 향상','비판적 수용성을 기르는 것','소셜미디어 팔로워를 늘리는 능력','뉴스를 가장 많이 읽는 것','미디어를 통한 정치적 홍보 능력'],
+ans:[1],
+exp:'미디어 리터러시 = 정보에 접근·분석·평가·생산하는 능력. 비판적 수용성이 근본 목표. 구성요소: 접근(access) / 분석(analysis) / 평가(evaluation) / 생산(production).'},
+
+{id:10,week:9,diff:2,type:'single',
+q:'소셜미디어 리터러시(Social Media Literacy)가 기존 미디어 리터러시와 구별되는 핵심 특징은?',
+opts:['단방향 영향 관계','공식 규제 기구에 의한 통제','다방향 영향 관계(생산자·소비자 경계 소멸)','전통 미디어보다 신뢰성이 항상 높음','개인 콘텐츠가 존재하지 않음'],
+ans:[2],
+exp:'소셜미디어는 비공식 소규모 집단 주도, 빠른 도달, 개인화 콘텐츠, 신뢰성·타당성 평가 어려움. 가장 결정적 차이: 다방향 영향 관계(↔ 대중매체 단방향).'},
+
+{id:11,week:9,diff:3,type:'multi',
+q:'무의사결정의 수단(방법)에 해당하는 것을 모두 고르시오. (복수 정답)',
+opts:['폭력','가치 박탈·위협·희생','편견 동원(동원)','편견 수정·강화(순화)','지연 전술'],
+ans:[0,1,2,3,4],
+exp:'무의사결정 수단 5가지: ①폭력 ②가치박탈·위협·희생 ③편견 동원(동원) ④편견 수정·강화(순화) ⑤지연 전술. 모두 비다원적 엘리트가 약소집단 의견을 억압하는 데 사용됩니다.'},
+
+{id:12,week:9,diff:2,type:'single',
+q:'의제설정에 영향을 미치는 Cobb & Elder의 문제 성격 요인 중 \'구체성\'에 대한 설명으로 옳은 것은?',
+opts:['구체적일수록 더 많은 지지를 끌어내기 쉽다','구체적일수록 일수록 지지와 이슈 약화 가능성이 있다','구체성은 의제 설정에 영향을 미치지 않는다','구체성이 낮을수록 의제 채택이 어렵다','구체성은 기술적 복잡성과 동일한 개념이다'],
+ans:[1],
+exp:'Cobb & Elder 문제 성격 중 구체성: 구체적일수록 일수록 특정 지지자만 동원(지지 약화)하고 이슈가 약화될 수 있음. 반대로 추상적일수록 더 넓은 지지 가능.'},
+
+{id:13,week:9,diff:3,type:'single',
+q:'공중의제(public agenda)가 성립하기 위한 조건 3가지를 모두 포함하는 것은?',
+opts:['① 대중 인지 ② 정부 관심 ③ 예산 편성 가능성','① 대중 인지 ② 정부 조치 필요성 인식 ③ 정부 권한·고려 대상으로 믿음','① 언론 보도 ② 의회 심의 ③ 대통령 승인','① NGO 요구 ② 법원 판결 ③ 정당 강령','① 예산 확보 ② 입법 가능성 ③ 국민 청원'],
+ans:[1],
+exp:'공중의제 성립 조건(Cobb & Elder): ① 다수 인지 ② 정부조치 필요성 인식 ③ 정부 권한·고려대상으로 믿음. 예: 아동보호·젠인재기·미세먼지.'},
+
+{id:14,week:9,diff:2,type:'short',
+q:'미디어 어드보케이트(Media Advocate)는 관찰자(observer)에서 어드보케이트로 변화하면서 목표하는 두 가지 변화 대상은? (각 1단어)',
+keys:['개인','환경','개인과 환경'],
+exp:'미디어 어드보케이트: 비의·사명 홍보를 위해 미디어를 전략적으로 사용하여 정책 압력을 행사. 관찰자→어드보케이트 변화의 목표: 개인 변화(개인) + 환경 변화(환경).'},
+
+{id:15,week:9,diff:3,type:'multi',
+q:'다중흐름모형에서 \'정책의 창\'이 열리는 트리거(trigger)에 해당하는 것을 모두 고르시오. (복수 정답)',
+opts:['사고·위기 등 문제적 창(focusing event)','선거·정권교체 등 정치적 창','정책의 흐름 상의 재료 역할','비권력집단의 정책주도권 확보 가능성','결합에 성공한 이후 의제 안착'],
+ans:[0,1,2,3],
+exp:'정책의 창 트리거: ① 문제적 창(사고·위기) ② 정치적 창(선거·정권교체) → 정책흐름의 재료 역할. 비권력집단이 결합으로 창 개방 기회. 결합 성공 후 안착은 \'창이 열린 결과\'이지 트리거가 아님.'},
+
+// ══ 11주차 — 정책결정 ══
+{id:16,week:11,diff:1,type:'single',
+q:'정책결정(policy decision-making)의 특성으로 옳지 않은 것은?',
+opts:['강제력·지배통성을 가진다','공익 목적으로 이루어진다','관계 대상이 특정 개인에 한정된다','합리성을 추구한다','연속적 결정 과정이다'],
+ans:[2],
+exp:'정책결정 특성: ①강제력·지배통성 ②공익 ③관계대상=특정 내외국인(국민 전체 포함 가능) ④합리성(규범적/현실적) ⑤연속적 결정. 특정 개인에 한정되는 것은 일반 의사결정의 특성입니다.'},
+
+{id:17,week:11,diff:1,type:'single',
+q:'정책결정 과정의 올바른 순서는?',
+opts:['문제 인지·정의 → 목표설정 → 정보수집·분석 → 대안 탐색·개발 → 결과예측 → 비교·평가 → 선택','목표설정 → 문제 인지·정의 → 정보수집·분석 → 대안 탐색·개발 → 비교·평가 → 결과예측 → 선택','문제 인지·정의 → 대안 탐색·개발 → 목표설정 → 결과예측 → 비교·평가 → 선택 → 정보수집','정보수집·분석 → 문제 인지·정의 → 목표설정 → 결과예측 → 대안 탐색·개발 → 비교·평가 → 선택','대안 탐색·개발 → 문제 인지·정의 → 목표설정 → 정보수집·분석 → 결과예측 → 비교·평가 → 선택'],
+ans:[0],
+exp:'정책결정 과정 7단계: ①문제 인지·정의 → ②목표설정 → ③정보수집·분석 → ④대안 탐색·개발(핵심) → ⑤결과예측 → ⑥비교·평가 → ⑦선택.'},
+
+{id:18,week:11,diff:1,type:'single',
+q:'정책결정 유형 중 \'비정형적(non-programmed) 결정\'의 특징으로 옳은 것은?',
+opts:['반복적이고 관례적인 문제를 다룬다','표준운영절차(SOP)에 따라 처리 가능하다','비반복적이고 창의성이 필요한 새로운 문제를 다룬다','기계적·행정적 절차로 처리할 수 있다','일상 업무·하위 사무에 해당한다'],
+ans:[2],
+exp:'비정형적 결정: 비반복·새로운·전례 없는·창의적 문제. 정형적 결정: 반복·관례·SOP·행정절차·일상 하위 사무.'},
+
+{id:19,week:11,diff:3,type:'single',
+q:'정책결정 과정 중 \'3종 오류(Type Ⅲ Error)\'란?',
+opts:['해결되지 않은 문제를 이미 해결된 것으로 보는 오류','문제의 심각성을 과소평가하는 오류','해결 대상을 잘못 정의하여 정책 전체 방향에 영향을 미치는 오류','정책 비용을 과소평가하여 예산이 초과되는 오류','정책 목표를 너무 높게 설정하는 오류'],
+ans:[2],
+exp:'3종 오류(Type Ⅲ Error) = 해결 대상(문제)을 잘못 선택 → 전체 방향에 영향. 문제 인지·정의 단계에서 발생하며 이후 모든 과정에 파급됨.'},
+
+{id:20,week:11,diff:2,type:'single',
+q:'J.D. Thompson의 대안선택 전략 중 \'협상적 전략(Compromise strategy)\'이 사용되는 상황은?',
+opts:['결과 예측이 가능하고 비용효과 분석이 가능할 때','전문가·실무자 판단이 필요할 때','이해관계자 간 협상·타협이 필요할 때','시간적 압박이 극도로 심할 때','모든 대안의 결과를 정밀 계산할 수 있을 때'],
+ans:[2],
+exp:'J.D. Thompson 대안선택 4전략: ①계산적 전략(합리 분석·비용최적) ②판단적 전략(전문가 판단) ③협상적 전략(이해관계자 협상·브레인스토밍·잠정합의) ④영감적 전략(직관·감각, 팬데믹 등 대응).'},
+
+{id:21,week:11,diff:2,type:'single',
+q:'대안의 비교·평가 기준 중 \'형평성(Equity)\'에 대한 설명으로 옳은 것은?',
+opts:['투입 대비 산출 비율이 높을수록 우선','목표 달성 정도','효과와 혜택의 공정한 배분','정치·법적 수용 가능성','기술·재정·행정적 집행 가능성'],
+ans:[2],
+exp:'형평성(Equity) = 효과·혜택의 공정한 배분. 수직적 형평성(같은 필요→동일 대우) + 수직적 형평성(다른 필요→다른 대우).'},
+
+{id:22,week:11,diff:2,type:'single',
+q:'정책결정 과정 중 \'목표설정\' 단계에서 평가하는 \'적합성(Appropriateness)\'의 의미는?',
+opts:['달성 수준이 충분한가','과도한 비용을 쓰지 않았는가','가장 바람직한 목표를 채택하고 올바르게 문제를 정의했는가','기술·법·재정적으로 실현 가능한가','이해관계자가 모두 동의하는가'],
+ans:[2],
+exp:'적합성(Appropriateness): 가장 바람직한 목표 채택 여부 + 올바른 문제 정의 여부. 적절성(Adequacy): 달성 수준이 충분한가. 이 둘을 혼동하지 않도록 주의.'},
+
+{id:23,week:11,diff:3,type:'multi',
+q:'대안의 실행가능성(Feasibility) 평가에 포함되는 기준을 모두 고르시오. (복수 정답)',
+opts:['기술적 가능성','재정적 가능성','행정적 가능성','법적 가능성','윤리·정치적 수용성'],
+ans:[0,1,2,3,4],
+exp:'실행가능성(Feasibility) = 채택+집행. 평가 기준: 기술적·재정적·행정적·법적·윤리적·정치적 수용성. 5가지 모두 해당합니다.'},
+
+{id:24,week:11,diff:2,type:'single',
+q:'정책분석과 정책결정의 관계로 옳은 것은?',
+opts:['정책분석이 완료된 후에만 정책결정이 시작된다','두 과정은 겹쳐 있으며, 분석은 합리적 분석과정이고 결정은 정치적·사회적 선택과정이다','정책결정이 완료된 후 정책분석이 시작된다','두 개념은 완전히 동일한 과정이다','정책분석은 정책집행 이후에만 실시된다'],
+ans:[1],
+exp:'정책분석 ↔ 정책결정: 겹쳐 있지만 별개. 분석 = 합리적 분석 과정(목표→대안→결과예측→비교평가→최적 선택). 결정 = 정치적·사회적 선택 과정(정치적 요인 포함).'},
+
+{id:25,week:11,diff:1,type:'single',
+q:'정책결정에서 집단적 결정의 단점으로 옳은 것은?',
+opts:['다양한 지식과 정보를 활용하기 어렵다','구성원의 수용성이 낮다','시간 소요가 많고 일부 지배 및 갈등이 발생할 수 있다','의사소통 문제가 감소한다','실시 의지가 약해진다'],
+ans:[2],
+exp:'집단 결정 장점: 지식·정보 활용, 수용성·실시 의지·의사소통 문제 개선. 단점: 동조 압력, 일부 지배, 시간 소요 많음, 갈등·정서적 이해 어려움.'},
+
+{id:26,week:11,diff:3,type:'short',
+q:'정책결정 과정의 대안 탐색·개발 단계에서 \'지배적 원리(dominance principle)\'가 의미하는 것을 한 문장으로 설명하시오. (키: 열등·제외)',
+keys:['열등','제외','지배받는 대안'],
+exp:'지배적 원리 = 모든 기준에서 다른 대안보다 열등한 대안을 스크리닝 단계에서 제외하는 원칙. 더 우월한 대안이 있으면 열등한 대안은 탈락시킵니다.'},
+
+{id:27,week:11,diff:2,type:'single',
+q:'정책결정에서 \'결과예측\' 방법 중 \'모형 작성(Model Building)\'의 특징으로 옳은 것은?',
+opts:['전문가의 직관에 의존한다','현실을 단순화하고 변수·인과·예측력을 분석한다','이해관계자 협상을 통해 결과를 예측한다','비공식적 경험에 의존한다','과거 사례를 직접 반복 적용한다'],
+ans:[1],
+exp:'모형 작성(Model Building): 현실 단순화 → 변수·인과 관계 분석 → 예측력 확보. 비분석적(직관·경험) vs 분석적(모형, 정책 실험, 직관·주관 보완).'},
+
+// ══ 12주차 — 정책집행 ══
+{id:28,week:12,diff:1,type:'single',
+q:'정책집행(policy implementation)의 정의로 가장 옳은 것은?',
+opts:['정책 문제를 발굴하는 과정','결정된 목표 달성을 위해 정부 활동·지침을 실행하는 것','정책의 효과를 평가하는 과정','정책 재원을 배분하는 과정','정책에 대한 여론을 수집하는 과정'],
+ans:[1],
+exp:'정책집행(Van Meter & Van Horn 1975): 결정된 목표 달성을 위한 정부 활동·지침 실행 / 정책 내용 구체화하는 계속적 결정 과정 / 인적·물적 자원 동원·프로그램 구현.'},
+
+{id:29,week:12,diff:1,type:'single',
+q:'정책순응(compliance)의 정의로 옳은 것은?',
+opts:['집행자와 대상집단이 결정의 의도에 부합하는 행동·협조','정책에 반대하는 집단의 항의 행위','집행기관이 정책을 재정의하는 행위','이해관계자들이 정책 내용 변경을 요구하는 행위','정책이 법원 판결로 집행되는 것'],
+ans:[0],
+exp:'정책순응 = 집행자·대상집단(target group)이 결정의 의도에 부합하는 행동·협조. 주체: 대상집단·중간매개집단·일선 관료. 불응 = 비협조·의도적 방해.'},
+
+{id:30,week:12,diff:2,type:'single',
+q:'정책순응의 원인 중 가장 빈번하게 나타나는 것은?',
+opts:['권위(authority)','합리성(rationality)','개인적 이익(self-interest)','제재(sanction)','명성(reputation)'],
+ans:[2],
+exp:'정책순응 원인: ①권위(지배통성·존경복종) ②합리성(타당·합리 판단, 건보료) ③정부 정통성 ④개인적 이익(self-interest·가장 빈번) ⑤제재(벌금·구속, 직접 기대 X) ⑥명성(신용·명예) ⑦지속시간.'},
+
+{id:31,week:12,diff:2,type:'single',
+q:'정책집행에서 대상집단 구성이 \'수혜>비용부담(강·약)\'일 때 집행의 용이성은?',
+opts:['집행이 곤란하다','집행이 용이하다','집행이 불가능하다','결과를 예측할 수 없다','비용부담집단이 강해야 용이하다'],
+ans:[1],
+exp:'대상집단 집행 용이성: ①수혜·비용부담 모두 약→가장 용이 ②수혜강·비용약→용이 ③수혜=비용, 수혜<비용 강→용이 or 곤란 ④수혜약·비용강→가장 곤란. 조직화 정도 낮을수록 집행 용이.'},
+
+{id:32,week:12,diff:1,type:'single',
+q:'정책집행의 성공에 영향을 미치는 \'내부 요인\'으로 옳지 않은 것은?',
+opts:['목표의 명확성','리더십','집행자의 성향','대중매체의 지지','SOP(표준운영절차)'],
+ans:[3],
+exp:'내부 요인: 목표 명확성·일관성·타당성, 의사소통, 리더십, 집행자 성향, SOP, 자원·인력·정보 권한, 집행기관 구조·관계. 대중매체 지지는 외부 요인입니다.'},
+
+{id:33,week:12,diff:2,type:'single',
+q:'정책불응의 원인 중 \'자원 부족\'에 따른 행태는?',
+opts:['지연','의도적 변경','형식적 이행','부집행','고의적 조작'],
+ans:[3],
+exp:'정책불응 원인과 행태: ①행동부담 과다→지연 ②불만→의도적 변경 ③정통성·권위 결여→형식적 이행 ④자원 부족→부집행 ⑤의사 전달 미흡→고의적 조작(피해집단 조정).'},
+
+{id:34,week:12,diff:2,type:'single',
+q:'정책순응 확보 방법 중 \'처벌 단계\' 이전에 가장 먼저 시도해야 할 단계는?',
+opts:['제재·벌칙','설득(공청회·토론·교육)','포괄적 감독','법적 강제','대안 폐기'],
+ans:[1],
+exp:'순응 확보 단계(처벌 직전 단계부터): ①설득(공청회·토론·교육) → ②홍보 → ③유인·보상(인센티브) → ④처벌·제재(벌금·구속, 불가피 경우) → ⑤대상·집단에 맞는 정책 변경·수정.'},
+
+{id:35,week:12,diff:3,type:'multi',
+q:'정책집행이 성공하기 위한 \'성공 영향 요인\' 중 내부 요인에 해당하는 것을 모두 고르시오. (복수 정답)',
+opts:['목표의 명확성·일관성','자원·인력·정보 권한','집행 기관 구조·관계','대상 집단의 행동·정치력','대중매체·사회적 지지'],
+ans:[0,1,2],
+exp:'내부 요인: 목표 명확성·일관성·타당성, 의사소통, 리더십, 집행자 성향, SOP, 자원·인력·정보 권한, 집행기관 구조·관계. 대상집단 행동·정치력, 대중매체 지지, 결정기관 지지, 집행기술 = 외부 요인.'},
+
+{id:36,week:12,diff:3,type:'short',
+q:'정책집행에서 \'적극적 집행(바람직한 집행)\'의 특징을 한 마디로 설명하시오. (키: 상호작용, 적응)',
+keys:['상호작용','적응','상호 적응'],
+exp:'바람직한 집행 = 상호 적응적 집행: 조직적 절차(SOP) 변화 + 프로그램 자체 조정. 정책 목표 고수 ≠ 바람직한 집행. 상황에 맞게 집행자와 대상 간 상호작용으로 적응하는 것이 핵심.'},
+
+{id:37,week:12,diff:2,type:'single',
+q:'정책집행 과정에서 SOP(표준운영절차)에 대한 설명으로 옳은 것은?',
+opts:['정책의 최종 목표를 규정하는 문서','집행자가 따라야 할 내용을 안내하는 규정','정책 예산 배분 절차','정책평가의 외부 기준','정치적 중립성을 보장하기 위한 규정'],
+ans:[1],
+exp:'SOP(Standard Operating Procedure) = 집행자가 따라야 할 내용 안내 규정. 집행 지침의 일부이며 정치성과 별개로 행정 안정성을 제공합니다.'},
+
+// ══ 13주차 — 보건의료정책 평가 ══
+{id:38,week:13,diff:1,type:'single',
+q:'보건의료정책 평가에서 \'과정평가(Process evaluation)\'의 목적으로 옳은 것은?',
+opts:['집행 후 최종 산출과 영향 분석','집행 이전 정책 내용 분석','결정·집행 과정 검토, 개선·효율·집행수준 조정','정책의 총 비용 산정','국민 만족도 사후 조사'],
+ans:[2],
+exp:'과정평가: 결정·집행 과정, 개선·활동·효율·집행수준 조정. 사전평가: 집행 전 정책 분석. 사후평가: 집행 후 최종 결과·피드백.'},
+
+{id:39,week:13,diff:1,type:'single',
+q:'보건의료정책 평가에서 정책 성공의 \'제1기준\'으로 꼽히는 것은?',
+opts:['효율성(Efficiency)','효과성(Effectiveness)','적절성(Adequacy)','형평성(Equity)','민주성(Democracy)'],
+ans:[1],
+exp:'효과성(Effectiveness) = 목표 달성 정도. 정책 성공의 제1기준. 구체적 목표 설정 필요·직접적 표현. 제한요인: 비용 미고려, 목표 저매·모호, 수단 충실해도 미달성 가능.'},
+
+{id:40,week:13,diff:1,type:'single',
+q:'평가 단계 중 \'사후평가(Summative evaluation)\'의 특징으로 옳은 것은?',
+opts:['집행 이전에 정책 타당성을 검토','집행 도중 문제를 해결하기 위해 실시','집행 후 최종 결과·효율·피드백·일반적 의미의 평가','수시로 반복 실시하는 평가','집행기관 내부에서만 실시'],
+ans:[2],
+exp:'평가 단계: 사전평가(집행 전·정책분석) → 과정평가(집행 도중·문제해결) → 사후평가(집행 후·최종·효율 피드백·일반적 의미). 가장 광범위하게 사용되는 것이 사후평가.'},
+
+{id:41,week:13,diff:2,type:'single',
+q:'보건의료정책 평가 절차(6단계) 중 첫 번째 단계로 옳은 것은?',
+opts:['이해관계자 확인','목적·결과 정의 및 논리모형 수립','평가 방법 선정','자료 수집·분석','연구 질문 도출'],
+ans:[1],
+exp:'평가 6단계: ①목적·결과 정의(논리모형) → ②이해관계자 확인 → ③목적·질문 도출 → ④평가방법 선정 → ⑤자료 수집·분석 → ⑥결과 확산.'},
+
+{id:42,week:13,diff:2,type:'single',
+q:'WHO 평가 기준 중 \'적절성(Adequacy)\'의 의미로 옳은 것은?',
+opts:['가장 바람직한 목표를 채택했는가','문제 해결 정도 + 사회적 필요 수준 충족 여부','투입 대비 산출 비율','목표 달성 정도','개인·집단 요구와의 일치'],
+ans:[1],
+exp:'적절성(Adequacy): 문제가 해결되는가 + 그 수준이 충분한가(사회적 필요 수준 충족). 최소 수준 설정 필요. 기준 없으면 객관성 한계. ≠ 적합성(Appropriateness·올바른 목표 채택).'},
+
+{id:43,week:13,diff:2,type:'single',
+q:'형평성(Equity) 기준에서 \'형평\'이 의미하는 것은?',
+opts:['모든 사람에게 동일한 서비스를 제공','가치 있는 것의 정당한 배분(균형)+균등한 기회(평등)의 결합','가장 많은 사람에게 최대 혜택','비용 대비 효과 최대화','정부 예산을 부서별로 균등 분배'],
+ans:[1],
+exp:'형평성(Equity): 형평 = 균형(가치·정당한 배분) + 평등(균등 기회·무차별). 모든 균등·행복 / 가치중립성 미확보. ≠ 평등(Equal = 동일한 양).'},
+
+{id:44,week:13,diff:2,type:'single',
+q:'보건의료정책 평가 기준 중 \'대응성(Responsiveness)\'에 대한 설명으로 옳은 것은?',
+opts:['투입 대비 산출 비율','목표 달성 정도','개인·집단의 요구와 일치하고 선호를 만족시키며 환경 변화에 적응하는 것','효과와 혜택의 공정한 배분','집행 과정의 민주적 절차'],
+ans:[2],
+exp:'대응성(Responsiveness): 개인·집단 요구 일치·선호 만족·환경변화 적응 대처 / 수혜자 만족도. 목표 달성률과 달라도 만족 보장 못 함 → 수혜자 선호 독립적으로 확인 필요.'},
+
+{id:45,week:13,diff:2,type:'single',
+q:'보건의료정책 평가에서 \'만족도(Satisfaction)\' 기준의 평가 주체에 포함되지 않는 것은?',
+opts:['직접 수혜자(환자·수급자)','일반 시민','이해관계자','외부 학술 연구자','국민 전체'],
+ans:[3],
+exp:'만족도 평가 주체: 직접 수혜자(환자·수급자) + 일반 시민 + 국민 전체 + 이해관계자. 외부 학술 연구자는 독립적 평가자이지 만족도 평가 주체가 아닙니다.'},
+
+{id:46,week:13,diff:2,type:'single',
+q:'보건의료정책 평가 기준 중 \'민주성(Democracy)\'의 핵심 의미로 옳은 것은?',
+opts:['비용 효율을 최대화하는 것','과정에 국민 참여를 허용하고 여론을 반영하며 의사를 고려하는 것','전문가만이 정책을 설계하는 것','정책 결과가 모든 국민에게 균등한 것','의회에서 다수결로 결정하는 것'],
+ans:[1],
+exp:'민주성 = 과정에 국민 참여 허용·여론 반영·의사 고려. 복지국가 가장 기본 기준·정당성 근거. 참여성 = 결정·집행·평가 과정에 다양한 국민 참여. 보건의료서비스 = 참여성이 민주성 포함 분석.'},
+
+{id:47,week:13,diff:3,type:'multi',
+q:'보건의료정책 평가에서 \'논리모형(Logic Model)\'의 구성요소를 모두 고르시오. (복수 정답)',
+opts:['이론·가정·근거','맥락(context)','투입(inputs)','산출(outputs)','결과(outcomes)'],
+ans:[0,1,2,3,4],
+exp:'논리모형 구성: ①이론·가정·근거(이론적·가정·근거) ②맥락(Context) ③투입(Inputs) ④실행(Activities) ⑤산출(Outputs) ⑥결과(Outcomes) ⑦영향(Impacts) ⑧가정. 제시된 5가지 모두 포함됩니다.'},
+
+{id:48,week:13,diff:2,type:'single',
+q:'내부평가와 외부평가 중 \'내부평가\'의 특징으로 옳은 것은?',
+opts:['외부 전문가가 독립적으로 평가','자체(이부) 평가라고도 하며 기관이 스스로 실시','선발 기준이 명확하여 신뢰도 높음','관료적 편향이 없음','모든 경우에 외부평가보다 신뢰성이 낮음'],
+ans:[1],
+exp:'내부평가: 자체 평가(이부 평가라고도 함). 특징: 기관 내부 전문가가 실시, 비용·시간 절약, 내부 사정 잘 앎. 단점: 객관성·독립성 낮을 수 있음. 외부평가: 독립적이나 비용·시간 증가.'},
+
+{id:49,week:13,diff:3,type:'single',
+q:'보건의료정책 평가에서 \'효율성(Efficiency)\'에 대한 설명으로 옳은 것은?',
+opts:['목표 달성 정도를 의미한다','산출/투입 비율로 경제적 사용·최소비용 최대효과를 의미한다','문제 해결의 충분성을 의미한다','공정한 배분을 의미한다','개인 요구와 일치 정도를 의미한다'],
+ans:[1],
+exp:'효율성(Efficiency) = 산출/투입 비율. 경제적 활용, 사회적 효율 강조. 절약 분석: 중단 용인(예방 O), 의료비 비싼·과다·이중) 억제. ≠ 효과성(목표 달성). 집행의 측면에서는 효율성·효과성이 기준이 되며 수혜자의 관점은 무관한 경향.'},
+
+{id:50,week:13,diff:3,type:'short',
+q:'보건의료정책 평가 절차에서 이해관계자(stakeholder) 확인이 중요한 이유는? (키: 요구, 활용, 목적)',
+keys:['요구','활용','목적','차이'],
+exp:'이해관계자 확인: 요구·활용 목적·활용 방식·우선순위 차이를 파악하기 위해 필요. 집단마다 기대가 다르므로 평가 목적·질문이 달라져야 하며, 사전에 확인하지 않으면 평가 결과가 활용되지 못할 수 있음.'},
+
+// ══ 9주차 추가 ══
+{id:51,week:9,diff:2,type:'single',
+q:'의제설정 유형 중 \'내부주도형(Type 1)\'의 특징으로 옳은 것은?',
+opts:['사회문제가 공중의제를 거쳐 정책의제로 전환된다','정부 내부 결정자가 의제를 생성·구체화하며 외부 확산 없이 정책화한다','NGO·시민단체가 주도하여 공론화한다','언론이 이슈를 발굴하여 정치적 압력을 행사한다','공중의제와 정부의제가 동시에 형성된다'],
+ans:[1],
+exp:'내부주도형(Type 1): 정부 내부 결정자(고위관료·전문가)가 의제를 직접 생성, 대중 확산 없이 정책화. 권위주의·엘리트 체제에서 주로 나타남. 대조: 외부주도형(Type 2)은 사회문제→공중의제→정책의제 순으로 전환.'},
+
+{id:52,week:9,diff:2,type:'single',
+q:'의제설정 유형 중 \'동원형(Mobilization type)\'의 특징으로 옳은 것은?',
+opts:['사회문제가 공중의제를 거쳐 정책의제로 자연스럽게 전환된다','정부 내부에서 의제를 생성한 뒤 공중의제로 확산·지지를 동원한다','시민단체가 주도하여 언론과 함께 이슈를 확산시킨다','의회가 먼저 의제를 채택하고 정부에 통보한다','공중의제와 정부의제가 동시에 출발한다'],
+ans:[1],
+exp:'동원형(Mobilization): 정부가 먼저 의제를 결정·구체화한 뒤, 국민 지지·공중 동원을 위해 확산. 내부 결정 선행 → 공중 지지 후속. 개발도상국 정부 주도 정책에서 자주 나타남.'},
+
+{id:53,week:9,diff:2,type:'single',
+q:'킹돈 모형에서 \'정책 기업가(Policy Entrepreneur)\'의 역할로 옳은 것은?',
+opts:['정책의 창이 열린 후 예산을 배분하는 역할','정치적 선거를 주도하는 역할','문제·정책·정치의 흐름을 연결하여 정책의 창을 여는 결합자 역할','사회문제를 처음 발굴하는 연구자 역할','정책집행 과정의 감독자 역할'],
+ans:[2],
+exp:'정책 기업가(Policy Entrepreneur): 킹돈 모형의 핵심 행위자. 문제·정책·정치의 세 흐름이 결합될 때 이를 연결·촉진하는 중개인. 정치인·관료·전문가·NGO 모두 가능. 기회(정책의 창)를 포착하여 결합시키는 역할.'},
+
+{id:54,week:9,diff:2,type:'single',
+q:'미디어 의제설정 \'2수준(second-level agenda setting)\'의 특징으로 옳은 것은?',
+opts:['어떤 이슈가 존재하는지를 대중에게 알린다','이슈의 특정 속성을 강조하여 대중이 어떻게 생각할지에 영향을 준다','대중이 이슈를 완전히 무시하게 만든다','정부의 의사결정을 직접 통제한다','미디어가 사실만 보도하는 것을 의미한다'],
+ans:[1],
+exp:'1수준 의제설정: 이슈의 존재(객체 중요성) 전달(무엇이 중요한가). 2수준 의제설정: 이슈의 특정 속성·측면 강조 → 대중의 판단 방향에 영향(속성 의제설정, 어떻게 생각할지). 2수준은 프레이밍 효과와 밀접하게 연결됩니다.'},
+
+{id:55,week:9,diff:3,type:'single',
+q:'미디어의 \'점화효과(Priming)\'에 대한 설명으로 옳은 것은?',
+opts:['미디어가 정치인의 모든 행동을 실시간 감시하는 효과','미디어 반복 보도로 대중이 정치인·정책 평가 시 해당 이슈를 판단 기준으로 더 활용하는 효과','미디어가 이슈의 긍정적 측면만 보도하는 효과','미디어가 국민의 투표 행동을 직접 결정하는 효과','SNS가 정보 확산 속도를 높이는 효과'],
+ans:[1],
+exp:'점화효과(Priming): 미디어가 특정 이슈를 반복·강하게 보도 → 대중이 후보·정책 평가 시 해당 이슈를 판단 기준으로 우선 활용. 의제설정(무엇을) + 점화(평가 기준 설정) + 프레이밍(어떻게)의 세 가지 미디어 효과.'},
+
+{id:56,week:9,diff:3,type:'single',
+q:'Bachrach & Baratz의 \'권력의 두 얼굴(Two Faces of Power)\' 중 제2의 얼굴이 의미하는 것은?',
+opts:['제도화된 법률을 통한 강제적 권력 행사','갈등의 범위를 제한하고 의제화 자체를 봉쇄하는 권력(무의사결정)','여론 형성을 통한 소프트 권력 행사','의회 다수결을 통한 정책결정 권력','예산 통제를 통한 집행 권력'],
+ans:[1],
+exp:'권력의 두 얼굴: 제1 얼굴 = 명시적 갈등에서 이기는 권력(다원주의 관점). 제2 얼굴 = 의제화 자체를 봉쇄하는 권력(Bachrach & Baratz 기여) = 무의사결정. 약소집단의 요구가 의제로 올라오지 못하게 사전 차단하는 것이 핵심.'},
+
+{id:57,week:9,diff:2,type:'single',
+q:'Cobb & Elder의 의제설정 영향 요인 중 \'사회적 유의성\'이 높을수록 나타나는 현상은?',
+opts:['특정 소수 집단만 관심을 가져 이슈가 강화된다','광범위한 집단에 영향을 미쳐 더 많은 지지와 공중의제화가 용이해진다','이슈가 구체화되어 반대 집단이 줄어든다','정책결정자가 문제를 즉시 채택한다','미디어 보도가 줄어들어 관심이 분산된다'],
+ans:[1],
+exp:'Cobb & Elder 의제설정 영향 요인: ①구체성(구체↑→특정 지지만 동원, 이슈 약화 가능) ②사회적 유의성(광범위 영향↑→지지 확대, 공중의제화 용이) ③시간적 관련성 ④기술적 복잡성 ⑤전례성 ⑥범주적 적합성.'},
+
+{id:58,week:9,diff:1,type:'short',
+q:'사회문제가 정책의제로 채택되는 단계에서, \'사회적 이슈(social issue)\'란 사회문제에 어떤 상황이 더해진 것인가? (키: 집단, 견해, 갈등)',
+keys:['집단','견해','갈등','다툼','견해차'],
+exp:'사회적 이슈 = 사회문제에 대해 집단 간 성격·해결법을 두고 견해 차이·갈등(다툼)이 발생한 상태. 사회문제가 단순 불만에서 집단 간 쟁점으로 발전할 때 사회적 이슈가 됩니다.'},
+
+// ══ 11주차 추가 ══
+{id:59,week:11,diff:1,type:'single',
+q:'정책결정 모형 중 \'합리모형(Rational-comprehensive Model)\'의 특징으로 옳은 것은?',
+opts:['기존 정책에서 소폭 수정하는 점증적 접근','완전한 정보와 합리성을 전제로 모든 대안을 검토하여 최적 결과를 도출하는 이상적 모형','만족스러운 수준에서 첫 번째 대안을 선택하는 모형','문제·해결책·참여자의 우연한 결합으로 결정하는 모형','근본적 결정은 합리적, 세부 결정은 점증적으로 하는 혼합 모형'],
+ans:[1],
+exp:'합리모형: 완전 정보·완전 합리성을 전제로 모든 대안을 검토하여 최적 대안 선택. 이상적·규범적 모형. 현실에서는 정보·시간·비용·인지 한계로 불가능. 현실적 수정 모형: 만족모형(Simon), 점증모형(Lindblom).'},
+
+{id:60,week:11,diff:2,type:'single',
+q:'Lindblom의 \'점증모형(Incremental Model)\'에 대한 설명으로 옳은 것은?',
+opts:['완전 정보를 바탕으로 모든 대안을 검토한다','기존 정책에서 소폭 수정·조정하는 현실적 결정 방식이다','합리적 분석과 직관을 결합한 혼합 접근을 사용한다','결정자들이 무작위로 해결책을 선택한다','전문가 집단이 최고 권위를 갖는다'],
+ans:[1],
+exp:'점증모형(Lindblom): 현실 결정자는 기존 정책에서 소폭 수정(incrementalism). 이유: 정보·시간·인지 제한, 정치적 실현 가능성 고려. 비판: 보수적, 근본 변화 어려움. 비위기·안정적 상황에서 현실 묘사력이 높음.'},
+
+{id:61,week:11,diff:2,type:'single',
+q:'Herbert Simon의 \'만족모형(Satisficing Model)\'의 핵심 개념으로 옳은 것은?',
+opts:['모든 대안을 완전히 분석하여 최고의 결과를 선택한다','제한된 합리성 하에서 만족스러운 수준의 첫 번째 대안을 선택한다','직관과 경험에만 의존하는 비분석적 결정 방식이다','기존 정책을 소폭 수정하는 현실적 결정을 한다','정치적 타협으로 결정한다'],
+ans:[1],
+exp:'만족모형(Simon): 제한된 합리성(Bounded rationality) = 인간은 인지 능력·시간·정보 한계로 완전 합리적 결정 불가. 대신 만족스러운(satisficing = satisfy + suffice) 수준의 첫 대안 선택. 합리모형의 현실적 수정 모형.'},
+
+{id:62,week:11,diff:3,type:'single',
+q:'Etzioni의 \'혼합관찰모형(Mixed-scanning Model)\'에서 근본적 결정과 세부 결정의 관계로 옳은 것은?',
+opts:['모든 결정을 동등하게 점증적으로 처리한다','근본적 결정은 합리모형, 세부 결정은 점증모형 방식으로 처리한다','모든 결정을 합리모형에 따라 처리한다','전문가 판단으로 모든 결정을 일괄 처리한다','근본적 결정과 세부 결정의 구분이 없다'],
+ans:[1],
+exp:'혼합관찰모형(Etzioni): 합리모형(이상)과 점증모형(현실)을 통합. 근본적 결정(전략적 방향) = 합리적 광범위 스캔 → 세부 결정(실행 내용) = 점증적 조정. 두 모형의 장점을 취한 현실적 통합 모형.'},
+
+{id:63,week:11,diff:3,type:'single',
+q:'Cohen, March & Olsen의 \'쓰레기통 모형(Garbage Can Model)\'이 적용되는 상황으로 옳은 것은?',
+opts:['명확한 목표와 충분한 정보가 갖춰진 안정적 상황','문제·해결책·참여자·선택 기회가 독립 흐름으로 우연히 결합되는 조직화된 무정부 상태','다수결 원칙이 지배하는 의회 의사결정 상황','전문가 집단이 합의를 통해 결정하는 상황','시간적 여유가 충분한 장기 계획 수립 상황'],
+ans:[1],
+exp:'쓰레기통 모형(Garbage Can Model): 조직화된 무정부 상태(organized anarchies)에서 문제(problems)·해결책(solutions)·참여자(participants)·선택 기회(choice opportunities)가 독립적으로 흘러다니다 우연히 결합. 애매한 목표를 가진 대학·병원 등에 적용.'},
+
+{id:64,week:11,diff:2,type:'single',
+q:'Janis의 \'집단사고(Groupthink)\'가 발생하기 쉬운 조건으로 옳은 것은?',
+opts:['구성원 의견이 다양하고 외부 전문가 의견이 충분할 때','응집력이 강한 집단에서 비판·반대를 자제하는 분위기가 형성될 때','의사결정에 충분한 시간과 정보가 있을 때','악마의 변호인(devil\'s advocate) 제도를 운영할 때','독립적 외부 감사가 진행될 때'],
+ans:[1],
+exp:'집단사고(Groupthink, Janis): 응집력 강한 집단에서 동조 압박 → 비판·반대 억제 → 왜곡된 판단·비합리적 결정. 대표 사례: 피그만 침공. 예방: 악마의 변호인(devil\'s advocate) 제도 운영, 외부 전문가 의견 구하기.'},
+
+{id:65,week:11,diff:1,type:'single',
+q:'J.D. Thompson의 대안선택 전략 중 \'계산적 전략(Computation strategy)\'이 사용되는 조건으로 옳은 것은?',
+opts:['이해관계자 간 합의가 없고 인과관계도 불확실할 때','선호 결과에 합의가 있고 인과관계에 대한 신뢰가 높을 때','시간 압박이 극도로 심하고 정보가 부족할 때','협상과 타협이 주된 결정 방식이 될 때','직관과 감각에만 의존해야 할 때'],
+ans:[1],
+exp:'Thompson 4전략 조건: ①계산적(선호합의O·인과신뢰O) ②판단적(선호합의O·인과불확실) ③협상적(선호불일치·인과신뢰O) ④영감적(선호불일치·인과불확실, 팬데믹 등). 계산적 전략이 가장 합리적 조건에서 사용됩니다.'},
+
+// ══ 12주차 추가 ══
+{id:66,week:12,diff:1,type:'single',
+q:'정책집행 접근법 중 \'하향식(Top-down) 집행\'의 특징으로 옳은 것은?',
+opts:['일선 관료의 재량과 적응이 중심이 되는 방식','상위 정책결정자의 의도대로 일선 관료가 충실히 집행하는 방식','지역 사회가 주도적으로 정책을 수정하는 방식','집행자와 대상집단이 함께 정책을 재설계하는 방식','집행 기관이 독립적으로 목표를 설정하는 방식'],
+ans:[1],
+exp:'하향식(Top-down): 정책결정자 의도 → 집행자 충실 이행. 명령·통제 모형. 장점: 책임 명확, 통일성. 단점: 현장 재량 미반영, 경직성. 비교: 상향식(Bottom-up)은 일선 관료의 재량·적응을 강조.'},
+
+{id:67,week:12,diff:2,type:'single',
+q:'Lipsky의 \'일선관료(Street-level Bureaucrat)\' 개념에 대한 설명으로 옳은 것은?',
+opts:['상위 결정자의 지시를 수동적으로 이행하는 집행자','현장에서 재량을 활용하여 실질적 정책을 만들어가는 실제 결정자','외부 감사를 통해 집행을 감독하는 평가자','정책 예산을 배분하는 관리자','정책 내용을 법령으로 제정하는 입법자'],
+ans:[1],
+exp:'Lipsky(1980) 일선관료: 시민과 직접 접촉하는 교사·경찰관·사회복지사·간호사 등. 현장 상황에 맞게 재량 행사 → 정책의 실질적 내용 결정. 상향식 집행의 핵심 행위자. 재량이 클수록 집행 격차(implementation gap) 발생 가능.'},
+
+{id:68,week:12,diff:2,type:'multi',
+q:'보건의료 정책집행에서 \'전달체계(delivery system)\'의 기본 원칙에 해당하는 것을 모두 고르시오. (복수 정답)',
+opts:['포괄성','접근성','연속성','통합성','수익성'],
+ans:[0,1,2,3],
+exp:'전달체계 원칙: ①포괄성(Comprehensiveness) ②접근성(Accessibility) ③연속성(Continuity) ④통합성(Integration/Coordination). 수익성(Profitability)은 보건의료 전달체계의 기본 원칙에 해당하지 않습니다.'},
+
+{id:69,week:12,diff:2,type:'multi',
+q:'정책순응의 원인에 해당하는 것을 모두 고르시오. (복수 정답)',
+opts:['권위(authority)','개인적 이익(self-interest)','제재(sanction)','정부 정통성','명성(reputation)'],
+ans:[0,1,2,3,4],
+exp:'정책순응 원인: ①권위(지배통성·존경복종) ②합리성 ③정부 정통성 ④개인적 이익(self-interest, 가장 빈번) ⑤제재(처벌 위협) ⑥명성(신용·명예). 제시된 5가지 모두 해당됩니다.'},
+
+{id:70,week:12,diff:3,type:'single',
+q:'정책집행에서 \'집행 재량(implementation discretion)\'이 클수록 나타나는 결과로 옳은 것은?',
+opts:['집행이 더욱 표준화되어 일관성이 높아진다','집행자가 현장 상황에 맞게 적응하여 집행 격차가 발생할 수 있다','대상집단의 불응이 항상 감소한다','정책 목표 달성률이 자동으로 높아진다','SOP의 역할이 더욱 강해진다'],
+ans:[1],
+exp:'집행 재량 ↑ → 집행자가 현장 상황·가치 판단에 따라 정책 내용 조정 → 집행 격차(implementation gap) 발생 가능. 일선관료론의 핵심 과제. 재량이 필요한 이유(복잡한 현장)와 위험(의도 이탈) 간 균형이 중요.'},
+
+{id:71,week:12,diff:2,type:'single',
+q:'정책집행 성공에 영향을 미치는 \'외부 요인\'에 해당하지 않는 것은?',
+opts:['결정 기관의 지지','대상 집단의 행동·정치력','대중매체의 지지','집행 기술','집행자의 성향과 리더십'],
+ans:[4],
+exp:'외부 요인: 결정기관 지지, 대상집단 행동·정치력, 대중매체 지지, 집행 기술. 내부 요인: 목표 명확성·일관성, 리더십, 집행자 성향, SOP, 자원·인력·정보 권한, 집행기관 구조. 집행자 성향과 리더십은 내부 요인입니다.'},
+
+{id:72,week:12,diff:3,type:'single',
+q:'정책불응 유형 중 \'형식적 이행(symbolic compliance)\'이 발생하는 원인으로 옳은 것은?',
+opts:['필요한 자원이나 예산이 부족할 때','행동 부담이 과도하게 크게 느껴질 때','정책의 정통성이나 권위를 인정하지 않을 때','의사 전달이 제대로 이루어지지 않을 때','이해관계자의 압력이 극심할 때'],
+ans:[2],
+exp:'정책불응 원인-행태 매핑: 행동부담 과다→지연, 불만→의도적 변경, 정통성·권위 결여→형식적 이행(겉으로만 따르는 척), 자원 부족→부집행, 의사 전달 미흡→고의적 조작. 형식적 이행 = 표면적으로 따르나 실질 내용은 이행하지 않음.'},
+
+{id:73,week:12,diff:1,type:'single',
+q:'정책집행에서 SOP(표준운영절차)의 순기능으로 옳은 것은?',
+opts:['집행 재량을 극대화하여 현장 적응력을 높인다','집행의 일관성·안정성 확보 및 재량 남용 방지에 기여한다','정책 목표 자체를 재설정하는 역할을 한다','평가 기준을 외부에서 도입하는 도구이다','대상집단의 요구를 반영하는 채널이다'],
+ans:[1],
+exp:'SOP 순기능: 집행 일관성·안정성·예측가능성 향상, 집행자 재량 남용 방지, 행정적 효율성. 역기능(한계): 경직성, 창의성 저해, 새로운 상황 대처 어려움, 형식주의 조장.'},
+
+// ══ 13주차 추가 ══
+{id:74,week:13,diff:1,type:'single',
+q:'보건의료정책 평가 유형 중 \'사전평가(Formative evaluation)\'의 목적으로 옳은 것은?',
+opts:['집행 도중 문제를 발견하고 집행 방향을 조정','집행 이전에 정책의 타당성·실현 가능성 분석 및 최적 정책 선택','집행 후 최종 결과·효과를 측정하여 피드백 제공','정책 비용을 실시간으로 모니터링','국민 만족도를 사후에 조사'],
+ans:[1],
+exp:'평가 유형 비교: 사전평가(집행 전 = 정책 분석·타당성·실현가능성 검토, 최적 정책 선택) / 과정평가(집행 중 = 문제 해결·효율·집행수준 조정) / 사후평가(집행 후 = 최종 결과·효율 피드백, 일반적 의미의 평가).'},
+
+{id:75,week:13,diff:2,type:'single',
+q:'정책평가에서 \'비용-편익 분석(CBA)\'과 \'비용-효과 분석(CEA)\'의 차이로 옳은 것은?',
+opts:['CBA는 효율성을, CEA는 형평성을 분석한다','CBA는 효과를 화폐 가치로 환산하고, CEA는 비화폐적 효과 단위(예: QALY·생존연수)로 비교한다','CBA는 사전 분석, CEA는 사후 분석에만 사용된다','CBA는 과정 분석, CEA는 결과 분석에 해당한다','두 분석 방법은 결과적으로 동일하다'],
+ans:[1],
+exp:'CBA(비용-편익): 투입(비용)과 편익(효과)을 모두 화폐 단위로 환산 → 편익비용비(B/C ratio). CEA(비용-효과): 비용은 화폐, 효과는 QALY·생명년 등 비화폐 단위. 보건의료에서 효과의 화폐 환산이 어려워 CEA가 더 빈번하게 활용됨.'},
+
+{id:76,week:13,diff:2,type:'single',
+q:'보건의료정책 평가 기준 중 \'참여성(Participation)\'의 핵심 내용으로 옳은 것은?',
+opts:['과정의 민주적 절차만을 의미한다','정책 결정·집행·평가 과정에 다양한 국민의 참여를 보장하는 것이다','전문가만이 의사결정에 참여한다','참여자 수를 최소화하여 효율성을 높인다','최종 집행 단계에서만 국민 참여를 허용한다'],
+ans:[1],
+exp:'참여성(Participation): 결정·집행·평가 전 과정에 다양한 국민의 참여 보장. 민주성(Democracy = 결과에 국민 의사 반영)과 유사하지만, 참여성은 과정 전체에서의 실질적 참여를 더 강조. 보건의료서비스에서 참여성이 민주성을 포괄하기도 함.'},
+
+{id:77,week:13,diff:1,type:'single',
+q:'정책평가에서 \'외부평가\'의 특징으로 옳은 것은?',
+opts:['기관 내부 전문가가 평가하여 비용·시간을 절약한다','외부 독립 기관이 평가하여 객관성·신뢰성이 높으나 비용·시간이 더 소요된다','외부평가는 항상 내부평가보다 결과가 더 좋다','외부평가는 기관 내부 사정을 완전히 파악하고 실시된다','외부평가는 사전평가에만 적용된다'],
+ans:[1],
+exp:'외부평가: 독립성·객관성·신뢰성 높음, 외부 시각 반영 가능. 단점: 비용·시간 증가, 내부 사정 파악 어려울 수 있음. 내부(자체)평가: 비용·시간 절약, 내부 사정 잘 앎. 단점: 객관성·독립성 낮을 수 있음.'},
+
+{id:78,week:13,diff:2,type:'single',
+q:'논리모형(Logic Model)에서 \'산출(Outputs)\'과 \'결과(Outcomes)\'의 차이로 옳은 것은?',
+opts:['산출은 장기적 영향이고, 결과는 단기적 생산물이다','산출은 활동의 직접 생산물이고, 결과는 대상집단에게 나타난 변화이다','두 개념은 같은 의미로 사용된다','산출은 투입 자원이고, 결과는 사업 예산이다','산출은 장기 목표이고, 결과는 단기 활동이다'],
+ans:[1],
+exp:'논리모형 요소: 투입(Inputs=자원) → 활동(Activities) → 산출(Outputs=직접 생산물, 예: 교육 횟수·이용자 수) → 결과(Outcomes=대상집단 변화, 예: 지식·태도·행동 변화) → 영향(Impacts=장기 사회적 변화). 산출≠결과 구분이 핵심.'},
+
+{id:79,week:13,diff:2,type:'single',
+q:'보건의료정책 평가 절차 6단계 중 마지막 단계인 \'결과 확산(Dissemination)\'의 목적으로 옳은 것은?',
+opts:['평가 방법을 외부에 공개하는 것','평가 결과를 이해관계자에게 전달하여 정책 개선·의사결정에 활용되도록 한다','평가를 위한 자료를 새롭게 수집하는 단계','이해관계자를 처음으로 확인하는 단계','평가 비용을 정산하는 단계'],
+ans:[1],
+exp:'평가 6단계: ①목적·결과 정의(논리모형) → ②이해관계자 확인 → ③평가 목적·질문 도출 → ④평가방법 선정 → ⑤자료 수집·분석 → ⑥결과 확산(Dissemination). 결과 확산 = 활용 목적에 맞게 적절한 대상·방식으로 전달 → 의사결정·정책 개선에 기여.'},
+
+{id:80,week:13,diff:3,type:'short',
+q:'보건의료정책 평가에서 참여자의 경험·인식·맥락을 심층적으로 파악하는 데 적합한 평가 방식은? (키: 질적, 맥락)',
+keys:['질적','맥락','질적 평가','인터뷰','관찰'],
+exp:'질적(qualitative) 평가: 참여자 경험·인식·맥락을 심층적으로 파악 (인터뷰·관찰·포커스 그룹 등). 양적 평가: 수치·통계로 결과 측정·비교 (효율성·효과성 지표). 보건의료정책에서는 두 방법을 혼합(mixed methods)하는 것이 권고됨.'},
+];
+
+// ─── QUIZ STATE ───────────────────────────────────────────────────────────────
+let state = {
+  started: false,
+  finished: false,
+  current: null,
+  difficulty: 1,
+  answered: false,
+  streakCorrect: 0,
+  streakWrong: 0,
+  used: new Set(),
+  totalAnswered: 0,
+  totalCorrect: 0,
+  diffStats: {1:{correct:0,total:0},2:{correct:0,total:0},3:{correct:0,total:0}},
+  selectedOpts: new Set(),
+  shortVal: '',
+  wrongQuestions: [],
+  shuffleMap: null,
+  mode: 'adaptive',
+};
+const TOTAL = 30;
+
+function getTotal(){ return state.mode === 'full' ? QUESTIONS.length : TOTAL; }
+const STREAK_UP = 3;
+const STREAK_DOWN = 2;
+
+function diffLabel(d){return d===1?'기본':d===2?'중급':'고급'}
+function diffClass(d){return d===1?'diff-1':d===2?'diff-2':'diff-3'}
+function typeLabel(t){return t==='single'?'단일정답':t==='multi'?'복수정답':'주관식'}
+function weekLabel(w){return w===9?'의제설정':w===11?'정책결정':w===12?'정책집행':'정책평가'}
+
+function shuffleIndices(n){
+  const a=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function getPool(diff){
+  return QUESTIONS.filter(q=>q.diff===diff && !state.used.has(q.id));
+}
+
+function pickQuestion(){
+  if(state.mode === 'full'){
+    const allLeft = QUESTIONS.filter(q=>!state.used.has(q.id));
+    if(allLeft.length===0) return null;
+    return allLeft[Math.floor(Math.random()*allLeft.length)];
+  }
+  let pool = getPool(state.difficulty);
+  if(pool.length===0){
+    const allLeft = QUESTIONS.filter(q=>!state.used.has(q.id));
+    if(allLeft.length===0) return null;
+    const diffs = [state.difficulty-1, state.difficulty+1, 1, 2, 3];
+    for(const d of diffs){
+      pool = allLeft.filter(q=>q.diff===d);
+      if(pool.length>0) break;
+    }
+  }
+  if(pool.length===0) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function checkAnswer(){
+  const q = state.current;
+  if(q.type==='short'){
+    const val = state.shortVal.trim().toLowerCase();
+    return q.keys.some(k=>val.includes(k.toLowerCase()));
+  }
+  const selOrig = [...state.selectedOpts].map(di=>state.shuffleMap[di]).sort((a,b)=>a-b);
+  const ans = [...q.ans].sort((a,b)=>a-b);
+  return selOrig.length===ans.length && selOrig.every((v,i)=>v===ans[i]);
+}
+
+function nextQuestion(){
+  const q = pickQuestion();
+  if(!q || state.totalAnswered >= getTotal()){
+    state.finished = true;
+    render();
+    return;
+  }
+  state.current = q;
+  state.used.add(q.id);
+  state.answered = false;
+  state.selectedOpts = new Set();
+  state.shortVal = '';
+  state.shuffleMap = q.type==='short' ? null : shuffleIndices(q.opts.length);
+  render();
+}
+
+function submitAnswer(){
+  if(!state.answered){
+    state.answered = true;
+    const correct = checkAnswer();
+    state.totalAnswered++;
+    state.diffStats[state.difficulty].total++;
+    if(correct){
+      state.totalCorrect++;
+      state.diffStats[state.difficulty].correct++;
+      state.streakCorrect++;
+      state.streakWrong=0;
+      if(state.streakCorrect>=STREAK_UP && state.difficulty<3){
+        state.difficulty++;
+        state.streakCorrect=0;
+      }
+    } else {
+      state.wrongQuestions.push(state.current);
+      state.streakWrong++;
+      state.streakCorrect=0;
+      if(state.streakWrong>=STREAK_DOWN && state.difficulty>1){
+        state.difficulty--;
+        state.streakWrong=0;
+      }
+    }
+    render();
+  }
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(!state.started){ app.innerHTML = renderStart(); bindStart(); return; }
+  if(state.finished){ app.innerHTML = renderResult(); bindRestart(); return; }
+  app.innerHTML = renderQuiz();
+  bindQuiz();
+}
+
+function renderStart(){
+  const d1=QUESTIONS.filter(q=>q.diff===1).length;
+  const d2=QUESTIONS.filter(q=>q.diff===2).length;
+  const d3=QUESTIONS.filter(q=>q.diff===3).length;
+  const isAdaptive = state.mode === 'adaptive';
+  const descHtml = isAdaptive
+    ? `<p>총 ${TOTAL}문제를 풀게 됩니다. (데이터베이스: ${QUESTIONS.length}문항)<br>실력에 따라 난이도가 자동으로 조절됩니다.</p>`
+    : `<p>${QUESTIONS.length}문항 전체를 무작위 순서로 풀게 됩니다.<br>9·11·12·13주차 전 범위를 한 번씩 완전 정복하는 모드입니다.</p>`;
+  const algoHtml = isAdaptive
+    ? `<div class="algo-box">
+    <strong>적응형 알고리즘</strong><br>
+    ✅ 3문제 연속 정답 → <strong>난이도 상승</strong><br>
+    ❌ 2문제 연속 오답 → <strong>난이도 하강</strong><br>
+    🎯 현재 실력에 맞는 문제를 자동으로 선택합니다.<br>
+    📚 주관식·복수정답 포함, 9·11·12·13주차 커버
+  </div>`
+    : `<div class="algo-box">
+    <strong>전체 풀기 모드</strong><br>
+    📋 ${QUESTIONS.length}개 문항을 무작위 순서로 전부 출제<br>
+    🔀 난이도 자동 조절 없이 모든 문제를 고르게 풀 수 있습니다.<br>
+    📚 9주차(의제설정)·11주차(정책결정)·12주차(정책집행)·13주차(정책평가)
+  </div>`;
+  return `
+<div class="header"><h1>간호정책 적응형 퀴즈</h1><p>9·11·12·13주차 · ${QUESTIONS.length}문항 데이터베이스</p></div>
+<div class="start">
+  <h2>퀴즈를 시작합니다</h2>
+  <div class="mode-tabs">
+    <button class="mode-tab ${isAdaptive?'active':''}" id="tabAdaptive">
+      <div class="mode-tab-title">적응형 퀴즈</div>
+      <div class="mode-tab-sub">${TOTAL}문제 · 난이도 자동조절</div>
+    </button>
+    <button class="mode-tab ${!isAdaptive?'active':''}" id="tabFull">
+      <div class="mode-tab-title">전체 풀기</div>
+      <div class="mode-tab-sub">${QUESTIONS.length}문제 · 완전 정복</div>
+    </button>
+  </div>
+  ${descHtml}
+  <div class="start-grid">
+    <div class="start-cell"><div class="start-cell-n n-green">${d1}</div><div class="start-cell-l">🟢 기본 문제</div></div>
+    <div class="start-cell"><div class="start-cell-n n-blue">${d2}</div><div class="start-cell-l">🔵 중급 문제</div></div>
+    <div class="start-cell"><div class="start-cell-n n-pink">${d3}</div><div class="start-cell-l">🔴 고급 문제</div></div>
+  </div>
+  ${algoHtml}
+  <button class="btn btn-primary" id="startBtn" style="padding:14px 48px;font-size:1.05rem">시작하기</button>
+</div>`;
+}
+
+function renderQuiz(){
+  const q = state.current;
+  const total = getTotal();
+  const prog = Math.round((state.totalAnswered/total)*100);
+  const streakIcon = state.streakCorrect>0?`🔥 ${state.streakCorrect}연속 정답`:'';
+
+  let optHtml='';
+  if(q.type==='short'){
+    const cls = state.answered ? (checkAnswer()?'correct-input':'wrong-input') : '';
+    optHtml=`<input type="text" class="short-input ${cls}" id="shortInput" placeholder="답을 입력하세요" value="${esc(state.shortVal)}" ${state.answered?'disabled':''}>`;
+  } else {
+    const inputType = q.type==='multi'?'checkbox':'radio';
+    optHtml='<div class="options">';
+    state.shuffleMap.forEach((origI,displayI)=>{
+      const opt = q.opts[origI];
+      let cls='option';
+      if(state.answered){
+        if(q.ans.includes(origI)) cls+=' correct';
+        else if(state.selectedOpts.has(displayI)&&!q.ans.includes(origI)) cls+=' wrong';
+      } else {
+        if(state.selectedOpts.has(displayI)) cls+=' selected';
+      }
+      optHtml+=`<label class="${cls}">
+        <input type="${inputType}" name="opt" value="${displayI}" ${state.selectedOpts.has(displayI)?'checked':''} ${state.answered?'disabled':''} data-idx="${displayI}">
+        <span class="option-text">${['①','②','③','④','⑤'][displayI]} ${esc(opt)}</span>
+      </label>`;
+    });
+    optHtml+='</div>';
+  }
+
+  let feedbackHtml='';
+  if(state.answered){
+    const correct = checkAnswer();
+    feedbackHtml=`<div class="feedback ${correct?'correct-fb':'wrong-fb'}">
+      <div class="feedback-title">${correct?'✅ 정답입니다!':'❌ 오답입니다'}</div>
+      <div class="feedback-exp">${esc(q.exp)}</div>
+    </div>`;
+  }
+
+  const hintHtml = q.type==='multi'&&!state.answered?`<div class="q-hint">💡 복수 정답 — 해당하는 것을 모두 선택하세요</div>`:'';
+  const shortHint = q.type==='short'&&!state.answered?`<div class="q-hint">✍️ 주관식 — 핵심 키워드를 포함하여 답하세요</div>`:'';
+  const submitDisabled = !state.answered && (q.type==='short'?state.shortVal.trim()==='':(state.selectedOpts.size===0));
+
+  return `
+<div class="header"><h1>간호정책 퀴즈${state.mode==='full'?' · 전체 풀기':''}</h1></div>
+<div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div>
+<div class="progress-meta"><span>${state.totalAnswered} / ${total} 문제</span><span>정답률 ${state.totalAnswered>0?Math.round(state.totalCorrect/state.totalAnswered*100):0}%</span></div>
+<div class="diff-row">
+  <span class="diff-badge ${diffClass(state.difficulty)}">${diffLabel(state.difficulty)}</span>
+  <span class="week-badge">${q.week}주차 · ${weekLabel(q.week)}</span>
+  <span class="type-badge">${typeLabel(q.type)}</span>
+  ${state.streakCorrect>0?`<span class="streak-badge">${streakIcon}</span>`:''}
+</div>
+<div class="card">
+  <div class="q-num">Q${state.totalAnswered+1}</div>
+  <div class="q-text">${esc(q.q)}</div>
+  ${hintHtml}${shortHint}
+  ${optHtml}
+  ${feedbackHtml}
+  <div class="btn-row">
+    ${!state.answered?`<button class="btn btn-primary" id="submitBtn" ${submitDisabled?'disabled':''}>확인</button>`:''}
+    ${state.answered?`<button class="btn btn-next" id="nextBtn">${state.totalAnswered>=total?'결과 보기':'다음 문제 →'}</button>`:''}
+  </div>
+</div>`;
+}
+
+function renderResult(){
+  const pct = Math.round(state.totalCorrect/state.totalAnswered*100);
+  let grade='', msg='';
+  if(pct>=90){grade='S';msg='완벽합니다! 간호정책 마스터 수준이에요. 시험 걱정 없습니다 💪';}
+  else if(pct>=80){grade='A';msg='훌륭해요! 핵심 내용을 잘 이해하고 있습니다. 틀린 문제만 복습하세요.';}
+  else if(pct>=70){grade='B';msg='잘 했습니다! 조금 더 복습하면 완벽해질 거예요.';}
+  else if(pct>=60){grade='C';msg='기본기를 다시 다져봅시다. 오답 노트를 활용해보세요.';}
+  else{grade='D';msg='포기하지 마세요! 강의 자료를 다시 읽고 재도전해보세요.';}
+
+  const ds = state.diffStats;
+  const maxDiff = state.used.size>0 ? Math.max(...[...state.used].map(id=>QUESTIONS.find(q=>q.id===id).diff)) : 1;
+  const weekMap = {9:'의제설정',11:'정책결정',12:'정책집행',13:'정책평가'};
+
+  return `
+<div class="header"><h1>간호정책 퀴즈</h1></div>
+<div class="card result">
+  <div style="font-size:1rem;color:#94a3b8">최종 결과</div>
+  <div class="result-score">${pct}%</div>
+  <div class="result-label">${state.totalCorrect} / ${state.totalAnswered} 정답 · 등급 <strong style="color:#c7d2fe">${grade}</strong></div>
+  <div class="result-msg">${msg}</div>
+  <div class="result-grid">
+    <div class="result-cell"><div class="result-cell-n">${state.totalCorrect}</div><div class="result-cell-l">정답</div></div>
+    <div class="result-cell"><div class="result-cell-n">${state.totalAnswered-state.totalCorrect}</div><div class="result-cell-l">오답</div></div>
+    <div class="result-cell"><div class="result-cell-n">${diffLabel(maxDiff)}</div><div class="result-cell-l">최고 난이도</div></div>
+  </div>
+  <div class="diff-summary">
+    ${[1,2,3].map(d=>{
+      const s=ds[d];
+      const p=s.total>0?Math.round(s.correct/s.total*100):0;
+      return s.total>0?`<div class="diff-summary-row">
+        <span class="diff-badge ${diffClass(d)}">${diffLabel(d)}</span>
+        <span>${s.correct}/${s.total} 정답 (${p}%)</span>
+      </div>`:''}).join('')}
+  </div>
+  ${state.wrongQuestions.length>0?`<div style="text-align:left;margin-bottom:20px">
+    <div style="font-size:.85rem;color:#94a3b8;margin-bottom:10px">📌 틀린 주차별 분포</div>
+    ${[...new Set(state.wrongQuestions.map(q=>q.week))].sort().map(w=>{
+      const cnt=state.wrongQuestions.filter(q=>q.week===w).length;
+      return `<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#0f172a;border-radius:8px;margin-bottom:6px;font-size:.85rem">
+        <span style="color:#94a3b8">${w}주차 · ${weekMap[w]}</span><span style="color:#f472b6">${cnt}문제 틀림</span></div>`;}).join('')}
+  </div>`:''}
+  <button class="btn-restart" id="restartBtn">다시 풀기</button>
+</div>`;
+}
+
+function esc(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function bindStart(){
+  document.getElementById('tabAdaptive').onclick=()=>{state.mode='adaptive';render();};
+  document.getElementById('tabFull').onclick=()=>{state.mode='full';render();};
+  document.getElementById('startBtn').onclick=()=>{state.started=true;nextQuestion();};
+}
+
+function bindQuiz(){
+  const q=state.current;
+  if(q.type==='short'){
+    const inp=document.getElementById('shortInput');
+    if(inp){
+      inp.addEventListener('input',e=>{
+        state.shortVal=e.target.value;
+        const sb=document.getElementById('submitBtn');
+        if(sb) sb.disabled=state.shortVal.trim()==='';
+      });
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!state.answered&&state.shortVal.trim()!=='') submitAnswer();});
+      inp.focus();
+    }
+  } else {
+    document.querySelectorAll('input[name="opt"]').forEach(inp=>{
+      inp.addEventListener('change',e=>{
+        const idx=parseInt(e.target.dataset.idx);
+        if(q.type==='single'){
+          state.selectedOpts=new Set([idx]);
+          document.querySelectorAll('.option').forEach(el=>el.classList.remove('selected'));
+          e.target.closest('.option').classList.add('selected');
+        } else {
+          if(e.target.checked) state.selectedOpts.add(idx);
+          else state.selectedOpts.delete(idx);
+          e.target.closest('.option').classList.toggle('selected',e.target.checked);
+        }
+        const sb=document.getElementById('submitBtn');
+        if(sb) sb.disabled=state.selectedOpts.size===0;
+      });
+    });
+  }
+  const sb=document.getElementById('submitBtn');
+  if(sb) sb.onclick=submitAnswer;
+  const nb=document.getElementById('nextBtn');
+  if(nb) nb.onclick=()=>{
+    if(state.totalAnswered>=getTotal()){state.finished=true;render();}
+    else nextQuestion();
+  };
+}
+
+function bindRestart(){
+  document.getElementById('restartBtn').onclick=()=>{
+    state={started:false,finished:false,current:null,difficulty:1,answered:false,
+      streakCorrect:0,streakWrong:0,used:new Set(),totalAnswered:0,totalCorrect:0,
+      diffStats:{1:{correct:0,total:0},2:{correct:0,total:0},3:{correct:0,total:0}},
+      selectedOpts:new Set(),shortVal:'',wrongQuestions:[],shuffleMap:null,mode:state.mode};
+    render();
+  };
+}
+
+render();
+</script>
+</body>
+</html>
