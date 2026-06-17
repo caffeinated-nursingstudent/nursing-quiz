@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>간호 학습 메뉴</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:20px}
+#app{max-width:760px;margin:0 auto}
+.header{text-align:center;padding:48px 0 36px}
+.header h1{font-size:1.8rem;font-weight:800;color:#f1f5f9;letter-spacing:-.5px}
+.header p{color:#64748b;font-size:.88rem;margin-top:8px}
+.menu-grid{display:flex;flex-direction:column;gap:14px}
+.menu-card{display:block;background:#1e293b;border:1.5px solid #334155;border-radius:16px;padding:22px 24px;text-decoration:none;transition:all .2s}
+.menu-card:hover{border-color:#6366f1;background:#1e1e3a;transform:translateY(-2px)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start}
+.menu-card-title{font-size:1.05rem;font-weight:700;color:#f1f5f9;margin-bottom:5px}
+.menu-card-sub{font-size:.82rem;color:#64748b;line-height:1.65}
+.arrow{color:#475569;font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.menu-card-badges{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:600}
+.b-purple{background:#2e1e3a;color:#c084fc;border:1px solid #6d28d9}
+.b-green{background:#1e3a2e;color:#4ade80;border:1px solid #166534}
+.b-blue{background:#1e2f4a;color:#60a5fa;border:1px solid #1d4ed8}
+.b-amber{background:#2a1e0a;color:#fbbf24;border:1px solid #92400e}
+@media(max-width:480px){.menu-card{padding:18px 16px}.header h1{font-size:1.5rem}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <h1>간호 학습 메뉴</h1>
+    <p>한양대 간호대학 · 2026년 1학기</p>
+  </div>
+  <div class="menu-grid">
+    <a href="index.html" class="menu-card">
+      <div class="card-top">
+        <div>
+          <div class="menu-card-title">기본간호학1 퀴즈</div>
+          <div class="menu-card-sub">8~15주차 · 160문항<br>적응형(40문제) / 전체 풀기 모드</div>
+        </div>
+        <span class="arrow">→</span>
+      </div>
+      <div class="menu-card-badges">
+        <span class="badge b-green">기본간호학1</span>
+        <span class="badge b-purple">적응형</span>
+        <span class="badge b-blue">160문항</span>
+      </div>
+    </a>
+    <a href="nurs-policy.html" class="menu-card">
+      <div class="card-top">
+        <div>
+          <div class="menu-card-title">간호정책 퀴즈</div>
+          <div class="menu-card-sub">9·11·12·13주차 · 80문항<br>의제설정 / 정책결정 / 정책집행 / 정책평가</div>
+        </div>
+        <span class="arrow">→</span>
+      </div>
+      <div class="menu-card-badges">
+        <span class="badge b-green">간호정책</span>
+        <span class="badge b-purple">적응형</span>
+        <span class="badge b-blue">80문항</span>
+      </div>
+    </a>
+    <a href="mindmap.html" class="menu-card">
+      <div class="card-top">
+        <div>
+          <div class="menu-card-title">간호정책 마인드맵</div>
+          <div class="menu-card-sub">9~13주차 개념 마인드맵<br>주요 이론 및 흐름 시각화</div>
+        </div>
+        <span class="arrow">→</span>
+      </div>
+      <div class="menu-card-badges">
+        <span class="badge b-amber">마인드맵</span>
+        <span class="badge b-purple">간호정책</span>
+      </div>
+    </a>
+  </div>
+</div>
+</body>
+</html>

@@ -106,6 +106,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f
 .algo-box{background:#1e293b;border-radius:12px;padding:18px 20px;text-align:left;margin:0 0 28px;border:1px solid #334155;font-size:.85rem;line-height:1.75;color:#94a3b8}
 .algo-box strong{color:#c7d2fe}
 
+.btn-back{display:inline-flex;align-items:center;gap:5px;background:transparent;color:#64748b;border:1.5px solid #334155;padding:7px 16px;border-radius:8px;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none}
+.btn-back:hover{border-color:#6366f1;color:#c7d2fe}
+.back-row{margin-bottom:4px}
 @media(max-width:480px){
   .card{padding:20px 16px}
   .result-grid{grid-template-columns:repeat(3,1fr)}
@@ -1097,6 +1100,7 @@ function renderStart(){
     📚 주관식·복수정답 포함, 8~15주차 전 범위 커버
   </div>`;
   return `
+<div class="back-row"><a href="menu.html" class="btn-back">← 메뉴</a></div>
 <div class="header"><h1>기본간호학1 적응형 퀴즈</h1><p>8주차 ~ 15주차 · ${QUESTIONS.length}문항 데이터베이스</p></div>
 <div class="start">
   <h2>퀴즈를 시작합니다</h2>
@@ -1230,6 +1234,7 @@ function renderResult(){
         <span style="color:#94a3b8">${w}주차</span><span style="color:#f472b6">${cnt}문제 틀림</span></div>`;}).join('')}
   </div>`:''}
   <button class="btn-restart" id="restartBtn">다시 풀기</button>
+  <div style="margin-top:14px"><a href="menu.html" class="btn-back">← 메뉴로 나가기</a></div>
 </div>`;
 }
 

@@ -84,6 +84,9 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f
   .diff-row{gap:6px}
   .diff-badge,.streak-badge,.week-badge,.type-badge{padding:4px 10px;font-size:.72rem}
 }
+.btn-back{display:inline-flex;align-items:center;gap:5px;background:transparent;color:#64748b;border:1.5px solid #334155;padding:7px 16px;border-radius:8px;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none}
+.btn-back:hover{border-color:#6366f1;color:#c7d2fe}
+.back-row{margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -719,6 +722,7 @@ function renderStart(){
     📚 9주차(의제설정)·11주차(정책결정)·12주차(정책집행)·13주차(정책평가)
   </div>`;
   return `
+<div class="back-row"><a href="menu.html" class="btn-back">← 메뉴</a></div>
 <div class="header"><h1>간호정책 적응형 퀴즈</h1><p>9·11·12·13주차 · ${QUESTIONS.length}문항 데이터베이스</p></div>
 <div class="start">
   <h2>퀴즈를 시작합니다</h2>
@@ -851,6 +855,7 @@ function renderResult(){
         <span style="color:#94a3b8">${w}주차 · ${weekMap[w]}</span><span style="color:#f472b6">${cnt}문제 틀림</span></div>`;}).join('')}
   </div>`:''}
   <button class="btn-restart" id="restartBtn">다시 풀기</button>
+  <div style="margin-top:14px"><a href="menu.html" class="btn-back">← 메뉴로 나가기</a></div>
 </div>`;
 }
 
