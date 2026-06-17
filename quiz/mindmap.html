@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>간호정책 마인드맵</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    background: #0f1117;
+    color: #e8eaf0;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+
+  header {
+    text-align: center;
+    padding: 32px 20px 20px;
+  }
+  header h1 { font-size: 1.8rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+  header p { font-size: 0.85rem; color: #6b7280; margin-top: 6px; }
+
+  .flow-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin: 0 auto 32px;
+    max-width: 700px;
+    padding: 0 20px;
+  }
+  .flow-item {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .flow-arrow {
+    color: #4b5563;
+    font-size: 1.1rem;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .f1 { background: #3b5bdb; }
+  .f2 { background: #0ca678; }
+  .f3 { background: #e67700; }
+  .f4 { background: #c92a2a; }
+
+  .tree-root {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Phase block */
+  .phase {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.15s;
+  }
+  .phase-header:hover { filter: brightness(1.1); }
+
+  .phase-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+  }
+  .phase-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
+  .phase-sub { font-size: 0.78rem; color: rgba(255,255,255,0.6); margin-left: auto; }
+  .toggle-icon {
+    margin-left: 8px;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.5);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .phase.open .toggle-icon { transform: rotate(90deg); }
+
+  .phase-body {
+    display: none;
+    padding: 4px 16px 16px 16px;
+    background: rgba(0,0,0,0.18);
+  }
+  .phase.open .phase-body { display: block; }
+
+  /* Topic cards inside phase */
+  .topics { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+
+  .topic {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .topic-header:hover { background: rgba(255,255,255,0.05); }
+
+  .topic-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .topic-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    flex: 1;
+  }
+  .topic-tags {
+    display: flex; gap: 5px; flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+  }
+  .topic-toggle {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.3);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .topic.open .topic-toggle { transform: rotate(90deg); }
+
+  .topic-body {
+    display: none;
+    padding: 0 14px 12px 30px;
+  }
+  .topic.open .topic-body { display: block; }
+
+  /* Concept tree inside topic */
+  .concept-tree {
+    list-style: none;
+    margin-top: 6px;
+  }
+  .concept-tree li {
+    position: relative;
+    padding: 4px 0 4px 18px;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+  .concept-tree li::before {
+    content: '';
+    position: absolute;
+    left: 5px; top: 12px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  .concept-tree li strong {
+    color: #e2e8f0;
+    font-weight: 600;
+  }
+  .concept-tree li em {
+    color: #a5b4fc;
+    font-style: normal;
+    font-size: 0.78rem;
+  }
+
+  .sub-tree {
+    list-style: none;
+    margin-top: 4px;
+    margin-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding-left: 12px;
+  }
+  .sub-tree li {
+    position: relative;
+    padding: 2px 0 2px 14px;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  .sub-tree li::before {
+    content: '–';
+    position: absolute;
+    left: 0; top: 2px;
+    color: rgba(255,255,255,0.2);
+  }
+  .sub-tree li strong { color: #cbd5e1; font-weight: 600; }
+
+  /* Phase colors */
+  .ph-agenda .phase-header { background: linear-gradient(135deg, #1e3a8a, #1d4ed8); }
+  .ph-agenda .phase-num { border: 2px solid #3b82f6; }
+  .ph-agenda .topic-dot { background: #60a5fa; }
+
+  .ph-decision .phase-header { background: linear-gradient(135deg, #064e3b, #059669); }
+  .ph-decision .phase-num { border: 2px solid #10b981; }
+  .ph-decision .topic-dot { background: #34d399; }
+
+  .ph-impl .phase-header { background: linear-gradient(135deg, #78350f, #d97706); }
+  .ph-impl .phase-num { border: 2px solid #f59e0b; }
+  .ph-impl .topic-dot { background: #fbbf24; }
+
+  .ph-eval .phase-header { background: linear-gradient(135deg, #7f1d1d, #dc2626); }
+  .ph-eval .phase-num { border: 2px solid #ef4444; }
+  .ph-eval .topic-dot { background: #f87171; }
+
+  /* Relation legend */
+  .legend {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #4b5563;
+    margin-bottom: 24px;
+  }
+  .legend span { margin: 0 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>간호정책 — 개념 마인드맵</h1>
+  <p>9·11·12·13주차 | 클릭하여 펼치기</p>
+</header>
+
+<div class="flow-bar">
+  <div class="flow-item f1">의제설정</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-item f2">정책결정</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-item f3">정책집행</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-item f4">정책평가</div>
+</div>
+
+<div class="tree-root">
+
+  <!-- ① 의제설정 -->
+  <div class="phase ph-agenda" id="ph1">
+    <div class="phase-header" onclick="togglePhase('ph1')">
+      <div class="phase-num">9주</div>
+      <div class="phase-title">의제설정</div>
+      <div class="phase-sub">사회문제가 정책의제가 되는 과정</div>
+      <div class="toggle-icon">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="topics">
+
+        <div class="topic" id="t1-1">
+          <div class="topic-header" onclick="toggleTopic('t1-1')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책의제 개념 — 계층 구조</div>
+            <div class="topic-tags"><span class="tag">공중의제 3조건</span><span class="tag">설정과정 유형</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>사회문제</strong> — 불특정 다수에게 결함·불만을 야기하는 상황</li>
+              <li><strong>사회적 쟁점</strong> — 집단 간 견해차가 있어 논쟁이 되는 문제</li>
+              <li><strong>공중의제</strong> — 대중 주목 + 정부 개입 정당하다고 인정
+                <ul class="sub-tree">
+                  <li>① 많은 사람이 관심을 가져야 함</li>
+                  <li>② 정부 조치가 필요하다고 상당수가 의식</li>
+                  <li>③ 해결이 정부 권한에 속한다고 다수가 믿어야 함</li>
+                </ul>
+              </li>
+              <li><strong>정책문제</strong> — 정부가 해결 필요성 인식·공식 대처 결정</li>
+              <li><strong>정책의제</strong> <em>(최상위)</em> — 정책적 해결을 의도하여 공식 채택된 문제</li>
+              <li><strong>설정과정 경로</strong>
+                <ul class="sub-tree">
+                  <li>사회문제 → 쟁점 → <strong>정책의제</strong> (제기 집단 힘이 강할 때)</li>
+                  <li>사회문제 → 쟁점 → 공중의제 → <strong>정책의제</strong> (공감대 확산)</li>
+                  <li>사회문제 → <strong>정책의제</strong> (정책담당자 주도 / 후진국형)</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t1-2">
+          <div class="topic-header" onclick="toggleTopic('t1-2')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">킹던의 다중흐름모형</div>
+            <div class="topic-tags"><span class="tag">3흐름 결합</span><span class="tag">정책의 창</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>문제의 흐름</strong> — "이게 문제인가?" 인식 과정</li>
+              <li><strong>정책의 흐름</strong> — "해법이 있는가?" 대안 준비 과정</li>
+              <li><strong>정치의 흐름</strong> — 여론 변화·정권교체·이익집단 압력 <em>(가장 큰 영향, 나머지 두 흐름과 독립)</em></li>
+              <li><strong>정책의 창</strong> — 3흐름이 결합(coupling)할 때 의제화 가능
+                <ul class="sub-tree">
+                  <li>열리는 트리거: 특정 사고·위기·재난 / 선거·정권교체</li>
+                  <li>닫히는 요인: 문제 해결 인식, 창 사건 소멸, 주요 인사 이동, 대안 부재, 흐름 미결합</li>
+                </ul>
+              </li>
+              <li><em>비권력 집단도 약한 흐름을 강화해 정책 주도 가능 → 간호계 참여 전략 근거</em></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t1-3">
+          <div class="topic-header" onclick="toggleTopic('t1-3')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">무의사결정론</div>
+            <div class="topic-tags"><span class="tag">Bachrach &amp; Baratz</span><span class="tag">권력의 두 얼굴</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>핵심 주장</strong> — 의제설정은 특정 엘리트·정치집단이 조정·통제함</li>
+              <li><strong>무의사결정</strong> — 의사결정자의 가치에 도전하는 주장을 억압·좌절시키기 위한 결정</li>
+              <li><strong>수단 5가지</strong>
+                <ul class="sub-tree">
+                  <li>① 폭력 행사</li>
+                  <li>② 가치박탈·위협·회유 등 권력행사</li>
+                  <li>③ 편견의 동원 — 주장을 "비애국적·비논리적"으로 낙인</li>
+                  <li>④ 편견을 수정·강화하는 우회적 전략</li>
+                  <li>⑤ 지연전략</li>
+                </ul>
+              </li>
+              <li><em>의제에 오른 것뿐 아니라 오르지 못한 것도 분석해야 함</em></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t1-4">
+          <div class="topic-header" onclick="toggleTopic('t1-4')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책의제 영향요인</div>
+            <div class="topic-tags"><span class="tag">Cobb &amp; Elder 5가지</span><span class="tag">촉발기제</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>Cobb &amp; Elder — 문제의 성격 5가지</strong>
+                <ul class="sub-tree">
+                  <li>① 구체성</li><li>② 사회적 유의성</li><li>③ 시간적 적시성</li>
+                  <li>④ 선례의 유무</li><li>⑤ 기술적 복잡성</li>
+                </ul>
+              </li>
+              <li><strong>Hogwood &amp; Gunn — 7가지</strong> <em>위기의 정도 / 특수성 / 감정적 측면 / 영향의 범위 / 유행성 / 권력과 정통성 / 주도집단</em></li>
+              <li><strong>주도집단</strong>
+                <ul class="sub-tree">
+                  <li>Gate-keeper: 지도자·정책결정자의 관심</li>
+                  <li>정책선도자: NGO·시민단체·언론·이익집단 (정부 외부)</li>
+                  <li>대중매체: 집중적 관심 → 의제화 가능성 ↑</li>
+                </ul>
+              </li>
+              <li><strong>정치적 요소</strong> — 체제 구조, 이데올로기, 정치체제 능력</li>
+              <li><strong>촉발기제(Triggering Mechanism)</strong> — 사건·위기·재난이 점화장치 역할
+                <ul class="sub-tree">
+                  <li>영향력 = 집단 규모 × 사건 심각성 인식 수준</li>
+                  <li>배분정책: 문지기 관계 중요 / 규제정책: 의제화 어려움</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t1-5">
+          <div class="topic-header" onclick="toggleTopic('t1-5')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">미디어 프레이밍</div>
+            <div class="topic-tags"><span class="tag">의제설정 vs 프레이밍</span><span class="tag">리터러시 4요소</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>의제설정</strong> <em>"What to think about"</em> — 무엇을 중요하게 다루느냐</li>
+              <li><strong>프레이밍</strong> <em>"How to think about it"</em> — 이슈를 어떻게 해석할 것인가</li>
+              <li><strong>프레이밍 4가지 작동 방식</strong>
+                <ul class="sub-tree">
+                  <li>선택(Selection): 특정 사실만 기사화</li>
+                  <li>강조(Emphasis): 헤드라인·사진으로 특정 관점 강화</li>
+                  <li>배제(Exclusion): 프레임 밖 정보 생략</li>
+                  <li>맥락화(Context): 배경 부여로 특정 결론 유도</li>
+                </ul>
+              </li>
+              <li><strong>미디어 리터러시 4요소</strong> — 접근·분석·평가·생산</li>
+              <li><strong>소셜미디어 리터러시</strong> — 방향: 다방향 / 판단기준: 서사 일관성·정서적 공명도 (기존과 별도 함양 필요)</li>
+              <li><strong>미디어 옹호자</strong> — 소비 → 생비자 → 전략적 미디어 활용 (대중교육 → 문제 프레이밍 → 전문가 개입 촉발)</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 정책결정 -->
+  <div class="phase ph-decision" id="ph2">
+    <div class="phase-header" onclick="togglePhase('ph2')">
+      <div class="phase-num">11주</div>
+      <div class="phase-title">정책결정</div>
+      <div class="phase-sub">대안 개발·평가·선택의 과정</div>
+      <div class="toggle-icon">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="topics">
+
+        <div class="topic" id="t2-1">
+          <div class="topic-header" onclick="toggleTopic('t2-1')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책결정 개념과 유형</div>
+            <div class="topic-tags"><span class="tag">5가지 특성</span><span class="tag">vs 의사결정</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>정책결정 5가지 특성</strong>
+                <ul class="sub-tree">
+                  <li>① 강제력과 정통성 — 주체는 정부·공공기관</li>
+                  <li>② 공익 — 사익 추구 기업 정책과 구별</li>
+                  <li>③ 관계 대상 — 정부기관 또는 내외국인</li>
+                  <li>④ 합리성 — 최고선택 vs 차선선택</li>
+                  <li>⑤ 연속적 결정 — 여러 이해관계가 뒤섞인 동적 과정</li>
+                </ul>
+              </li>
+              <li><strong>vs 의사결정 핵심 차이</strong> — 정책결정: 연속적 과정 / 의사결정: 원칙상 한 번의 선택</li>
+              <li><strong>유형 3쌍</strong>
+                <ul class="sub-tree">
+                  <li>정형적 vs 비정형적 (반복·선례 유무)</li>
+                  <li>전략적("무엇") vs 전술적("어떻게")</li>
+                  <li>개인적 vs 집단적 (장단점 명확)</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t2-2">
+          <div class="topic-header" onclick="toggleTopic('t2-2')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책결정 변수와 기준</div>
+            <div class="topic-tags"><span class="tag">변수 3가지</span><span class="tag">규범적·현실적 기준</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>변수 3가지</strong>
+                <ul class="sub-tree">
+                  <li>① 환경 — 사회·정치·경제 상황, 이익집단·NGO 역할</li>
+                  <li>② 정책결정자 <em>(권위주의 행정에서 핵심)</em> — 개성·가치관·자원</li>
+                  <li>③ 정책결정구조 — 조직의 구조·절차·관례</li>
+                </ul>
+              </li>
+              <li><strong>규범적·당위적 기준</strong>
+                <ul class="sub-tree">
+                  <li>① 공익 — 정신적 자세의 기초</li>
+                  <li>② 정책철학(뿌리) — 목적달성에 바람직한 가치들의 총체</li>
+                  <li>③ 정책이념(나무) — 능률성·효과성·합법성·민주성 등 최고가치</li>
+                </ul>
+              </li>
+              <li><strong>현실적·경험적 기준</strong>
+                <ul class="sub-tree">
+                  <li>① 가치 — 정치적 기반집단·조직·사회 윤리</li>
+                  <li>② 유권자·이익집단</li>
+                  <li>③ 여론</li>
+                  <li>④ 결정규칙·선례·관행</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t2-3">
+          <div class="topic-header" onclick="toggleTopic('t2-3')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책결정과정 7단계</div>
+            <div class="topic-tags"><span class="tag">Ⅲ종 과오</span><span class="tag">Thompson 4전략</span><span class="tag">소망성·실현가능성</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>① 문제 파악과 정의</strong> — <em>Ⅲ종 과오: 해결 대상 자체를 잘못 선택 → 전체 방향 오류</em>, 프레이밍 효과 주의</li>
+              <li><strong>② 목표 설정</strong> — 능률성 기준 우선순위 / 적합성(올바른 목표?) + 적절성(적당한 수준?)</li>
+              <li><strong>③ 정보수집과 분석</strong></li>
+              <li><strong>④ 대안 탐색과 개발</strong> <em>★핵심</em>
+                <ul class="sub-tree">
+                  <li>탐색 원천: 경험·이론·주관적 방법·이해관계집단</li>
+                  <li>실현가능성(정치적·행정적·경제적·기술적) 검토</li>
+                  <li>지배의 원리: 열등한 대안 제외</li>
+                </ul>
+              </li>
+              <li><strong>⑤ 결과예측</strong> — 비분석적·모형·정책실험·직관적 방법</li>
+              <li><strong>⑥ 비교·평가</strong>
+                <ul class="sub-tree">
+                  <li>소망성: 효과성 + 능률성 + 형평성</li>
+                  <li>실현가능성: 기술적·재정적·행정적·법적·윤리적·정치적</li>
+                </ul>
+              </li>
+              <li><strong>⑦ 대안 선택 — Thompson 4전략</strong>
+                <ul class="sub-tree">
+                  <li>계산전략: 합리적 분석으로 최적대안 (수리화 가능 분야)</li>
+                  <li>판단전략: 전문가 판단에 의존</li>
+                  <li>타협전략: 이해관계자 협상</li>
+                  <li>영감전략: 직감에 의존 (비교 불가한 경우)</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t2-4">
+          <div class="topic-header" onclick="toggleTopic('t2-4')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책분석과정</div>
+            <div class="topic-tags"><span class="tag">합리적 분석</span><span class="tag">순환적 과정</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>정책분석</strong> — 합리적·체계적 접근, 정보를 창출·조직·제공</li>
+              <li><strong>절차</strong> — 반복적·순환적·연쇄적 (문제분석 → 목표설정 → 대안탐색 → 예측 → 평가 → 선택 → 다시 문제분석)</li>
+              <li><strong>핵심 과정</strong> — 정책대안의 탐색과 개발</li>
+              <li><strong>정책결정 vs 정책분석</strong>
+                <ul class="sub-tree">
+                  <li>결정: 정치적 요인 포함한 실제 채택 여부 결정</li>
+                  <li>분석: 가장 효율적·합리적 대안 선택 (분석결과 기초)</li>
+                  <li>둘은 완전히 분리되지 않고 겹쳐 움직임</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 정책집행 -->
+  <div class="phase ph-impl" id="ph3">
+    <div class="phase-header" onclick="togglePhase('ph3')">
+      <div class="phase-num">12주</div>
+      <div class="phase-title">정책집행</div>
+      <div class="phase-sub">정책지침을 실행으로 옮기는 과정</div>
+      <div class="toggle-icon">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="topics">
+
+        <div class="topic" id="t3-1">
+          <div class="topic-header" onclick="toggleTopic('t3-1')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책집행 개념과 특징</div>
+            <div class="topic-tags"><span class="tag">상호적응적 집행</span><span class="tag">SOP</span><span class="tag">5단계</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>전통적 정의</strong> — 주어진 정책 목표 달성을 위해 행동</li>
+              <li><strong>현대적 정의</strong> — 이해집단과 집행자가 상호작용하는 과정</li>
+              <li><strong>잘못된 견해</strong>
+                <ul class="sub-tree">
+                  <li>정책 만능주의: 법 제정만 하면 해결된다는 착각</li>
+                  <li>정책목표 고정: 집행 중 재해석 가능성 무시</li>
+                  <li>집행자 = 단순 전달자 (계층적 조직관)</li>
+                </ul>
+              </li>
+              <li><strong>상호적응적 집행</strong>
+                <ul class="sub-tree">
+                  <li>조직적 적응: SOP가 목표 달성 위해 변화</li>
+                  <li>프로그램 적응: 집행환경 특수성에 맞게 정책 조정</li>
+                </ul>
+              </li>
+              <li><strong>집행 5단계</strong> — 정책지침 작성 → 자원 확보 → 조직화 → 실현활동 → 감독·통제</li>
+              <li><strong>4가지 특징</strong> — 정책의도 실현 / 구체적·지속적 결정 / 국민생활 직결 / 정책형성·평가와 상호작용</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t3-2">
+          <div class="topic-header" onclick="toggleTopic('t3-2')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책순응 — 의의와 원인</div>
+            <div class="topic-tags"><span class="tag">순응 vs 수용</span><span class="tag">원인 7가지</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>순응(compliance)</strong> — 외면적 행동 측면에서 저항하지 않음 (행태 차원)</li>
+              <li><strong>수용(acceptance)</strong> — 외면적 행동 + 내면적 가치까지 따름 (더 깊은 개념)</li>
+              <li><em>순응이 확보돼도 정책수단이 잘못되면 정책실패 가능</em></li>
+              <li><strong>순응의 원인 7가지</strong>
+                <ul class="sub-tree">
+                  <li>① 권위 — 정통성 인정·존경</li>
+                  <li>② 합리성 — 정책이 필수불가결하다는 판단</li>
+                  <li>③ 정부의 정통성 — 행정절차 정당성</li>
+                  <li>④ 개인적 이익 <em>(가장 빈번)</em> — 이익을 보는 사람들이 협조</li>
+                  <li>⑤ 제재의 사용 <em>(가장 불안정)</em> — 벌금·구속 회피</li>
+                  <li>⑥ 평판 — 사회윤리적 신용·명예 중시</li>
+                  <li>⑦ 지속 시간 — 장기 집행 → 습관화 → 순응 증가</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t3-3">
+          <div class="topic-header" onclick="toggleTopic('t3-3')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">불응과 순응 확보 전략</div>
+            <div class="topic-tags"><span class="tag">불응 원인·형태</span><span class="tag">6가지 전략</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>불응의 원인 → 형태</strong>
+                <ul class="sub-tree">
+                  <li>행동부담 회피 → 지연</li>
+                  <li>정책에 대한 불만 → 임의변경</li>
+                  <li>정통성·권위 결여 → 형식적 순응</li>
+                  <li>자원의 부족 → 부집행</li>
+                  <li>의사전달 미흡 → 고의적 조작</li>
+                </ul>
+              </li>
+              <li><strong>순응 확보 6가지 전략</strong> <em>(강제성 약 → 강)</em>
+                <ul class="sub-tree">
+                  <li>① 설득 — 이성적 설명, 공청회·토론회</li>
+                  <li>② 선전 — 정책 내용 홍보</li>
+                  <li>③ 유인·보상 — 물질적·정신적 혜택으로 자발적 순응</li>
+                  <li>④ 처벌·제재 <em>(불가피한 경우만)</em> — 비자발적 순응</li>
+                  <li>⑤ 동의·지지 획득 — 순응자에게 실질적 편익</li>
+                  <li>⑥ 정책내용 변경·수정 — 불응 원인 자체를 제거</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t3-4">
+          <div class="topic-header" onclick="toggleTopic('t3-4')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책집행 영향요인</div>
+            <div class="topic-tags"><span class="tag">내적·외적 요인</span><span class="tag">대상집단 조직화</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>내적요인</strong> — 목표의 명확성·일관성 / 의사소통 효율성 / 집행책임자 리더십 / SOP / 예산·인력·정보</li>
+              <li><strong>외적요인</strong> — 환경 변화 / 대상집단 태도·정치력 / 여론 / 정책결정기관 지원 / 기술</li>
+              <li><strong>대상집단 조직화와 집행 용이성</strong>
+                <ul class="sub-tree">
+                  <li>수혜집단: 조직화 강약 관계없이 집행 용이</li>
+                  <li>희생집단 조직화 강 → 집행 곤란</li>
+                  <li>희생집단 조직화 약 → 집행 용이</li>
+                  <li><em>가장 어려운 경우: 희생집단이 강하게 조직화 + 수혜집단보다 크거나 같을 때</em></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 정책평가 -->
+  <div class="phase ph-eval" id="ph4">
+    <div class="phase-header" onclick="togglePhase('ph4')">
+      <div class="phase-num">13주</div>
+      <div class="phase-title">정책평가</div>
+      <div class="phase-sub">절차 타당성 + 결과 효과성 검토</div>
+      <div class="toggle-icon">▶</div>
+    </div>
+    <div class="phase-body">
+      <div class="topics">
+
+        <div class="topic" id="t4-1">
+          <div class="topic-header" onclick="toggleTopic('t4-1')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책평가 개념과 목표</div>
+            <div class="topic-tags"><span class="tag">보건의료정책</span><span class="tag">동태적·순환적</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>보건의료정책</strong> — 국민건강 보호·증진을 위해 정부기관이 공식 결정한 기본방침</li>
+              <li><strong>절차적 측면</strong> — 수립·집행 과정이 공식적·타당한 절차를 거쳤는지</li>
+              <li><strong>결과적 측면</strong> — 결과가 국민건강 보호·증진에 효과적이었는지</li>
+              <li><strong>목표</strong> — 보건의료정책 개선 + 현행·미래 정책의 안내자 역할</li>
+              <li><em>정책평가 = 정책순환의 마지막 고리 + 다음 순환의 출발점</em></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t4-2">
+          <div class="topic-header" onclick="toggleTopic('t4-2')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책평가의 유형</div>
+            <div class="topic-tags"><span class="tag">3가지 분류 기준</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>① 평가목적 기준</strong>
+                <ul class="sub-tree">
+                  <li>과정평가: 정책결정·집행 과정 평가 (개선·환류 목적)</li>
+                  <li>영향평가: 집행 후 산출·영향 평가 (효과 검증·책임성)</li>
+                </ul>
+              </li>
+              <li><strong>② 평가단계(시기) 기준</strong>
+                <ul class="sub-tree">
+                  <li>사전평가: 집행 전 = 정책분석</li>
+                  <li>과정평가: 집행 중 문제점 해결</li>
+                  <li>사후평가 <em>(일반적 "정책평가")</em>: 집행 후 최종 / 순수효과 추정 / 환류(Feedback)가 목적</li>
+                </ul>
+              </li>
+              <li><strong>③ 평가자 위치 기준</strong>
+                <ul class="sub-tree">
+                  <li>내부평가: 자체평가 + 상부평가</li>
+                  <li>외부평가: 집행체제 밖 전문가</li>
+                  <li>선택 기준 없음 — 정책 성격·의뢰자 가치체계에 따라</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t4-3">
+          <div class="topic-header" onclick="toggleTopic('t4-3')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">정책평가 절차 6단계</div>
+            <div class="topic-tags"><span class="tag">논리모형</span><span class="tag">이해관계자</span><span class="tag">환류</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>1단계</strong> — 평가 목적과 결과 정의 (<em>논리모형: 투입→실적→결과→영향</em>)</li>
+              <li><strong>2단계</strong> — 이해관계자 확인 + 요구 파악</li>
+              <li><strong>3단계</strong> — 목적과 질문 도출 ("무엇이 달라지는가" vs "어떻게 수행되는가")</li>
+              <li><strong>4단계</strong> — 평가방법 선정</li>
+              <li><strong>5단계</strong> — 자료 확보 및 평가 수행</li>
+              <li><strong>6단계</strong> — 평가결과 확산 (환류) <em>— 전달 대상도 초기에 결정</em></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t4-4">
+          <div class="topic-header" onclick="toggleTopic('t4-4')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">평가기준 — 집행자 관점</div>
+            <div class="topic-tags"><span class="tag">능률성</span><span class="tag">효과성</span><span class="tag">적정성</span><span class="tag">형평성</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>능률성(Efficiency)</strong> — 산출/투입 비율. 최소비용 최대효과 <em>(사회적 능률 강조 추세)</em></li>
+              <li><strong>효과성(Effectiveness)</strong> — 정책목표 달성 정도. <em>정책성공 판단의 제1기준</em>
+                <ul class="sub-tree">
+                  <li>측정 저해요인: 비용 비고려 / 목표 애매·상충 / 수단 충실해도 목표 미달</li>
+                </ul>
+              </li>
+              <li><em>능률성·효과성 = 집행자 관점 → 소비자 입장에서는 의미 없는 기준으로 인정되는 경향</em></li>
+              <li><strong>적정성(Adequacy)</strong> — 문제를 어느 정도 해결했는가 (사회적 충분성)
+                <ul class="sub-tree">
+                  <li>평가 객관성에 한계 — 기준이 주체에 따라 달라짐</li>
+                </ul>
+              </li>
+              <li><strong>형평성(Equity)</strong> — 정책효과·편익이 공정하게 배분됐는지
+                <ul class="sub-tree">
+                  <li>균형(체제 간 가치 배분) + 평등(법 앞의 균등한 기회)</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="topic" id="t4-5">
+          <div class="topic-header" onclick="toggleTopic('t4-5')">
+            <div class="topic-dot"></div>
+            <div class="topic-name">평가기준 — 수혜자 관점</div>
+            <div class="topic-tags"><span class="tag">대응성</span><span class="tag">만족도</span><span class="tag">민주성</span><span class="tag">참여성</span></div>
+            <div class="topic-toggle">▶</div>
+          </div>
+          <div class="topic-body">
+            <ul class="concept-tree">
+              <li><strong>대응성(Responsiveness)</strong> — 수혜자의 요구·기대에 융통성 있게 대처하는 능력
+                <ul class="sub-tree">
+                  <li>공식 목표달성도 ↑ ≠ 수혜자 만족도 ↑</li>
+                  <li>수혜집단: 직접 효과를 받는 수혜자(시민)</li>
+                </ul>
+              </li>
+              <li><strong>만족도(Satisfaction)</strong> — <em>정책 최종 성패 판단기준</em>
+                <ul class="sub-tree">
+                  <li>대응성보다 넓음: 직접수혜자 + 일반 시민 + 이해관계자 모두</li>
+                </ul>
+              </li>
+              <li><strong>민주성(Democracy)</strong> — 국민 참여 확대 + 여론 충실 반영</li>
+              <li><strong>참여성(Participation)</strong> — 결정·수행·평가 과정에 다수 국민 참여
+                <ul class="sub-tree">
+                  <li>참여 정도에 따라 보건의료서비스의 질이 좌우됨</li>
+                  <li>현대 복지국가 가장 기본적 평가기준 — 정책 정당성 확보 핵심</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function togglePhase(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+function toggleTopic(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// Open all phases by default
+document.querySelectorAll('.phase').forEach(el => el.classList.add('open'));
+</script>
+</body>
+</html>
