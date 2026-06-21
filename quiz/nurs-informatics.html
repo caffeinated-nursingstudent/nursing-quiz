@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>간호정보학 퀴즈 (9·10·11·13주차)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:20px}
+#app{max-width:760px;margin:0 auto}
+.header{text-align:center;padding:28px 0 18px}
+.header h1{font-size:1.55rem;font-weight:700;color:#f1f5f9;letter-spacing:-.5px}
+.header p{color:#94a3b8;font-size:.85rem;margin-top:6px}
+.progress-bar{background:#1e293b;border-radius:99px;height:8px;overflow:hidden;margin:14px 0 6px}
+.progress-fill{height:100%;border-radius:99px;transition:width .4s;background:linear-gradient(90deg,#0ea5e9,#6366f1)}
+.progress-meta{display:flex;justify-content:space-between;font-size:.78rem;color:#64748b}
+.diff-row{display:flex;gap:10px;align-items:center;margin:16px 0 10px;flex-wrap:wrap}
+.diff-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:.78rem;font-weight:700;letter-spacing:.3px}
+.diff-1{background:#1e3a2e;color:#4ade80;border:1px solid #166534}
+.diff-2{background:#1e2f4a;color:#60a5fa;border:1px solid #1d4ed8}
+.diff-3{background:#3a1e2e;color:#f472b6;border:1px solid #9d174d}
+.streak-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#1e293b;color:#fbbf24;border:1px solid #78350f}
+.week-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.type-badge{padding:5px 14px;border-radius:99px;font-size:.78rem;background:#0e2a3a;color:#38bdf8;border:1px solid #0369a1}
+.card{background:#1e293b;border-radius:16px;padding:28px 28px 24px;margin-bottom:16px;border:1px solid #334155}
+.q-num{font-size:.78rem;color:#64748b;margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.q-text{font-size:1.05rem;line-height:1.7;color:#f1f5f9;font-weight:500}
+.options{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:10px;border:1.5px solid #334155;cursor:pointer;transition:all .18s;background:#0f172a}
+.option:hover{border-color:#0ea5e9;background:#0e1e2e}
+.option.selected{border-color:#0ea5e9;background:#0e1e2e}
+.option.correct{border-color:#22c55e!important;background:#0d2a1a!important}
+.option.wrong{border-color:#ef4444!important;background:#2a0d0d!important}
+.option input{accent-color:#0ea5e9;margin-top:2px;flex-shrink:0;width:17px;height:17px}
+.option-text{font-size:.95rem;line-height:1.5;color:#cbd5e1}
+.short-input{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:10px;padding:13px 16px;color:#f1f5f9;font-size:.95rem;margin-top:18px;outline:none;transition:border-color .2s;font-family:inherit}
+.short-input:focus{border-color:#0ea5e9}
+.short-input.correct-input{border-color:#22c55e!important}
+.short-input.wrong-input{border-color:#ef4444!important}
+.btn{padding:12px 28px;border-radius:10px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .18s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;transform:none;cursor:not-allowed}
+.btn-next{background:#1e293b;color:#e2e8f0;border:1.5px solid #475569}
+.btn-next:hover{border-color:#0ea5e9;color:#bae6fd}
+.btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.feedback{padding:16px 18px;border-radius:10px;margin-top:16px;line-height:1.6;font-size:.9rem}
+.feedback.correct-fb{background:#0d2a1a;border:1px solid #166534;color:#86efac}
+.feedback.wrong-fb{background:#2a0d0d;border:1px solid #991b1b;color:#fca5a5}
+.feedback-title{font-weight:700;font-size:1rem;margin-bottom:6px}
+.feedback-exp{color:#cbd5e1;margin-top:8px;font-size:.88rem;line-height:1.65}
+.result{text-align:center;padding:40px 20px}
+.result-score{font-size:3.5rem;font-weight:800;background:linear-gradient(135deg,#0ea5e9,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:18px 0 8px}
+.result-label{font-size:1rem;color:#94a3b8;margin-bottom:24px}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+.result-cell{background:#1e293b;border-radius:12px;padding:18px 10px;border:1px solid #334155}
+.result-cell-n{font-size:1.8rem;font-weight:700;color:#f1f5f9}
+.result-cell-l{font-size:.78rem;color:#64748b;margin-top:4px}
+.result-msg{font-size:1.1rem;color:#e2e8f0;margin:10px 0 24px;line-height:1.6}
+.diff-summary{display:flex;flex-direction:column;gap:8px;margin:16px 0 28px;text-align:left}
+.diff-summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1e293b;border-radius:8px;font-size:.88rem}
+.btn-restart{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;padding:14px 36px;border-radius:12px;border:none;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.btn-restart:hover{opacity:.88}
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 24px}
+.mode-tab{background:#1e293b;border:2px solid #334155;border-radius:14px;padding:18px 16px;cursor:pointer;font-family:inherit;text-align:center;transition:all .2s;width:100%}
+.mode-tab:hover{border-color:#0ea5e9}
+.mode-tab.active{border-color:#0ea5e9;background:#0e1e2e}
+.mode-tab-title{font-size:1rem;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.mode-tab-sub{font-size:.78rem;color:#64748b}
+.mode-tab.active .mode-tab-sub{color:#94a3b8}
+.start{text-align:center;padding:50px 20px}
+.start h2{font-size:1.5rem;font-weight:700;color:#f1f5f9;margin-bottom:12px}
+.start p{color:#94a3b8;font-size:.92rem;line-height:1.7;margin-bottom:10px}
+.start-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}
+.start-cell{background:#1e293b;border-radius:12px;padding:18px 10px;border:1px solid #334155}
+.start-cell-n{font-size:1.6rem;font-weight:700}
+.start-cell-l{font-size:.78rem;color:#64748b;margin-top:6px}
+.n-green{color:#4ade80}.n-blue{color:#60a5fa}.n-pink{color:#f472b6}
+.algo-box{background:#1e293b;border-radius:12px;padding:18px 20px;text-align:left;margin:0 0 28px;border:1px solid #334155;font-size:.85rem;line-height:1.75;color:#94a3b8}
+.algo-box strong{color:#bae6fd}
+@media(max-width:480px){
+  .card{padding:20px 16px}
+  .diff-row{gap:6px}
+  .diff-badge,.streak-badge,.week-badge,.type-badge{padding:4px 10px;font-size:.72rem}
+}
+.btn-back{display:inline-flex;align-items:center;gap:5px;background:transparent;color:#64748b;border:1.5px solid #334155;padding:7px 16px;border-radius:8px;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none}
+.btn-back:hover{border-color:#0ea5e9;color:#bae6fd}
+.back-row{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const QUESTIONS = [
+// ══ 9주차 — 디지털 헬스 ══
+{id:1,week:9,topic:'디지털 헬스',diff:1,type:'single',
+q:'디지털 헬스(Digital Health)의 정의로 가장 적절한 것은?',
+opts:['의사가 환자에게 비대면으로 진료만 제공하는 서비스','ICT(정보통신기술)와 헬스케어를 결합하여 환자·일반인의 건강증진을 목표로 하는 분야','병원 내부의 전자의무기록(EMR) 시스템을 관리하는 학문','의료기기를 제조하는 바이오메디컬 산업'],
+ans:[1],
+exp:'디지털 헬스 = ICT(빅데이터·AI 포함) + 헬스케어. 정교한 맞춤형 의료서비스 제공, 환자·일반인의 건강증진을 목표로 하는 제품 및 서비스 개발 분야 (산업통상자원부, 2019). 범위: 생체데이터 수집 → 바이오 빅데이터 플랫폼 → AI 기반 혁신의료 → 스마트 건강관리.'},
+
+{id:2,week:9,topic:'디지털 헬스',diff:1,type:'single',
+q:'eHealth와 mHealth를 올바르게 비교한 것은?',
+opts:['eHealth = 모바일 기기 기반, mHealth = 인터넷 기반','eHealth = 인터넷·관련 기술 기반 헬스케어, mHealth = 모바일 기기 기반 헬스케어','eHealth = 원격 수술 시스템, mHealth = 전자처방전 발급','eHealth = 의료 빅데이터, mHealth = 의료 AI 분석'],
+ans:[1],
+exp:'eHealth = 인터넷과 관련 기술을 이용하여 제공되는 헬스케어 서비스. mHealth = 모바일 전화, 환자 모니터링 기기, PDA 등 모바일 기기 기반 헬스케어 서비스 (WHO, 2011).'},
+
+{id:3,week:9,topic:'디지털 헬스',diff:2,type:'single',
+q:'디지털 치료기기(DTx)가 일반 건강관리 앱과 구별되는 핵심 특징은?',
+opts:['스마트폰에서 실행된다','임상적으로 효과·안전성이 입증된 소프트웨어를 기반으로 한다','무료로 배포된다','게임이나 VR 기술을 반드시 활용한다'],
+ans:[1],
+exp:'DTx = 임상적으로 효과·안전성이 입증된 소프트웨어 기반으로 질병을 예방·관리·치료. 의료기기(SaMD)로 분류되어 임상 근거 검증 및 규제 대상. 단순 건강관리 앱과의 핵심 차이점.'},
+
+{id:4,week:9,topic:'디지털 헬스',diff:1,type:'short',
+q:'DTx(디지털 치료기기)는 어떤 기기 유형으로 분류되는가? 영어 약자(4글자)로 쓰시오.',
+keys:['SaMD','samd','s a m d'],
+exp:'SaMD(Software as a Medical Device) = 특정 하드웨어에 의존하지 않는 독립적 소프트웨어 의료기술. DTx는 SaMD로 분류되어 임상 근거 검증이 요구됩니다.'},
+
+{id:5,week:9,topic:'디지털 헬스',diff:2,type:'single',
+q:'보건소 모바일 헬스케어 사업에 대한 설명으로 옳은 것은?',
+opts:['2020년 코로나19 대응 목적으로 시작된 사업이다','2017년부터 시작된 24주 스마트기기 활용 만성질환 관리 사업이다','전국 20개 병원에서 시행되는 입원환자 관리 프로그램이다','AI 기반 원격 진단 서비스를 무상 제공하는 국가 사업이다'],
+ans:[1],
+exp:'보건소 모바일 헬스케어 사업(2017년~): 24주 스마트기기 활용 만성질환 관리. 2023년 기준 202개 보건소, 28,000명 대상으로 운영.'},
+
+{id:6,week:9,topic:'디지털 헬스',diff:2,type:'single',
+q:'디지털 헬스의 도전 과제와 그 내용의 연결이 옳지 않은 것은?',
+opts:['데이터 보안 — 랜섬웨어·피싱 등 사이버 공격, 암호화·보안 프로토콜 필수','접근성 — 고령층, 디지털 기기 미숙자, 저소득층의 이용 제한','정보 신뢰성 — 잘못된 정보의 빠른 확산, 건강정보 평가 체계 필요','비용 효율성 — DTx 치료비용이 기존 약물요법보다 항상 낮은 문제'],
+ans:[3],
+exp:'디지털 헬스의 3대 도전 과제: ①데이터 보안(사이버 공격·암호화) ②접근성(디지털 격차·고령층 등) ③정보 신뢰성(오정보 확산, 예: 유튜브 통풍 콘텐츠의 20%가 잘못된 정보). 비용 효율성은 교재에 명시된 도전 과제가 아닙니다.'},
+
+{id:7,week:9,topic:'디지털 헬스',diff:2,type:'short',
+q:'디지털 헬스에서 언급되는 E-patient란 어떤 환자를 의미하는가? 핵심 특징을 한 문장으로 쓰시오.',
+keys:['건강 데이터','치료 결정','적극','능동','참여'],
+exp:'E-patient = 건강 데이터를 분석하고 치료 결정에 적극 참여하는 능동적 환자. 환자 참여·공유의사결정의 기술적 토대이며, 디지털 헬스의 장점 중 하나로 꼽힙니다.'},
+
+{id:8,week:9,topic:'디지털 헬스',diff:3,type:'single',
+q:'디지털 헬스와 간호의 관계에서 문제점-방향의 연결이 옳지 않은 것은?',
+opts:['기술 복잡성 → 사람 중심 통합적 건강관리 체계 지원 방향으로','환자와의 상호작용 감소 → 안전성·윤리성·보안성·신뢰성 기반 개발 방향으로','많은 디지털 기술이 간호 관점 없이 설계 → 정책결정·기술개발·설계에 간호사 참여 필수','데이터 표준화 부족 → 간호사는 임상 업무에만 집중하고 표준화는 IT 전문가에게 맡기는 방향으로'],
+ans:[3],
+exp:'교재 내용: 데이터 표준화 부족 → 간호용어 표준화(ICNP 등)로 해결. 간호사는 데이터 표준화 과정에도 참여해야 합니다. "IT 전문가에게 맡기는 방향"은 교재의 방향성과 반대입니다.'},
+
+{id:9,week:9,topic:'디지털 헬스',diff:1,type:'single',
+q:'헬스 애플리케이션의 유형 분류로 옳은 것은?',
+opts:['처방전 앱과 진단 앱','건강생활관리 앱과 질병관리 앱','병원 예약 앱과 원격 수술 앱','EHR 앱과 PHR 앱'],
+ans:[1],
+exp:'헬스 앱 유형: ①건강생활관리 앱(운동 추적, 식단 관리, 명상·정신 건강 지원) ②질병관리 앱(질병 정보, 투약 알림, 만성질환 맞춤 관리). 2021년 기준 35만 개 이상 앱이 시장에 존재.'},
+
+{id:10,week:9,topic:'디지털 헬스',diff:2,type:'single',
+q:'환자포털(Patient Portal)의 기능으로 옳지 않은 것은?',
+opts:['진료 기록 및 검사 결과 확인','처방약 정보 확인 및 진료 예약 조정','OpenNotes와 같은 임상기록 공유의 기술적 구현','의료진이 처방을 자동 생성하고 승인 없이 발급하는 AI 시스템'],
+ans:[3],
+exp:'환자포털 = 환자가 자신의 의료 정보를 온라인으로 접근·관리할 수 있는 디지털 플랫폼. 진료 기록, 검사 결과, 처방약 정보 확인, 진료 예약 조정, OpenNotes 기술적 구현. 의료진 처방 자동 발급은 환자포털이 아닌 CDSS/EMR 기능입니다.'},
+
+{id:11,week:9,topic:'디지털 헬스',diff:2,type:'short',
+q:'PHR과 PGHR 데이터를 환자가 직접 수집·관리하는 서비스 확대가 mHealth 발전의 배경으로 꼽히는 이유는?',
+keys:['환자 참여','직접 수집','관리','기술적 기반'],
+exp:'PHR·PGHR 데이터를 환자가 직접 수집·관리하는 서비스 확대는 환자 참여 확대의 기술적 기반이 됩니다. 스마트폰·웨어러블 기기 상용화가 이를 가능하게 했습니다.'},
+
+{id:12,week:9,topic:'디지털 헬스',diff:3,type:'single',
+q:'간호에서 디지털 헬스 활용이 필요한 이유를 가장 잘 설명한 것은?',
+opts:['간호사의 업무를 자동화하여 인력을 감축하기 위해','의료 데이터 기록·관리 자동화, 근거 기반 실무 실천, 환자 건강증진 도구로 활용하기 위해','의료 결정을 AI가 대신하도록 하여 의료진의 책임을 줄이기 위해','환자와의 대면 접촉을 최소화하여 감염 위험을 줄이기 위해'],
+ans:[1],
+exp:'간호에서 디지털 헬스의 역할: ①의료 데이터 기록·관리·전송 자동화 ②데이터 시각화 → 근거 기반 실무 실천 ③생체 정보 원격 모니터링 및 임상의사결정 지원 ④환자 건강증진 도구. 수집된 데이터는 PBE의 원천 자료가 됩니다.'},
+
+// ══ 9주차 — 소비자건강정보학 ══
+{id:13,week:9,topic:'소비자건강정보학',diff:1,type:'single',
+q:'소비자건강정보학(Consumer Health Informatics, CHI)의 정의로 옳은 것은?',
+opts:['의료 공급자가 병원 내부 정보를 관리하는 학문','의료소비자가 디지털 기술을 활용하여 건강 정보를 효과적으로 탐색·활용할 수 있도록 지원하는 보건의료정보학의 한 분야','의료기관의 경영 효율화를 위한 정보관리 학문','임상의가 환자 데이터를 분석하는 방법을 연구하는 학문'],
+ans:[1],
+exp:'CHI = 의료소비자의 정보 요구를 인정하고, 사용 가능한 도구와 정보를 제공해 자기관리를 돕는 보건의료정보학의 한 분야. 역할: 가치 있는 건강정보 제공 → 정보에 입각한 의사결정 촉진 → 건강한 행동 독려.'},
+
+{id:14,week:9,topic:'소비자건강정보학',diff:1,type:'single',
+q:'WHO(2024)의 헬스 리터러시 정의에서 포함되는 능력 4가지를 모두 포함하는 것은?',
+opts:['접근, 분석, 치료, 예방','접근, 이해, 평가, 사용','검색, 분석, 평가, 공유','이해, 관리, 기록, 공유'],
+ans:[1],
+exp:'헬스 리터러시(WHO, 2024) = 건강과 웰빙을 증진·유지하는 방식으로 정보와 서비스에 접근(access), 이해(understand), 평가(evaluate), 사용(use)할 수 있는 능력. 단순 문해력을 넘어 비판적 평가와 행동으로 옮기는 능력 포함.'},
+
+{id:15,week:9,topic:'소비자건강정보학',diff:2,type:'short',
+q:'공유의사결정(SDM)의 3단계를 순서대로 쓰시오.',
+keys:['Choice Talk','Option Talk','Decision Talk','choice','option','decision'],
+exp:'SDM 3단계: ①Choice Talk(다양한 옵션 존재를 알리는 단계) → ②Option Talk(각 옵션의 이점과 위험을 논의하는 단계) → ③Decision Talk(환자가 옵션을 탐색하고 결정을 내릴 수 있도록 돕는 단계).'},
+
+{id:16,week:9,topic:'소비자건강정보학',diff:1,type:'single',
+q:'디지털헬스 리터러시 측정도구 중 8문항으로 구성된 것은?',
+opts:['DHLI','mDiHERS','eHEALS','PHQ-9'],
+ans:[2],
+exp:'eHEALS(eHealth Literacy Scale): 8문항. DHLI(Digital Health Literacy Instrument): 5차원, 21개 문항. mDiHERS: 36개 항목, 디지털헬스 준비도·건강형평성·환경적 요소·주관적 자신감+객관적 이해능력 측정.'},
+
+{id:17,week:9,topic:'소비자건강정보학',diff:2,type:'single',
+q:'OpenNotes에 대한 설명으로 옳지 않은 것은?',
+opts:['2010년 미국에서 시작된 정책·운동이다','환자가 임상기록에 언제 어디서든 온라인으로 접속할 수 있게 하는 정책이다','환자포털을 통해 기술적으로 구현된다','현재 한국에서는 모든 의료기관이 의무적으로 시행하고 있다'],
+ans:[3],
+exp:'OpenNotes = 2010년 미국 시작, 환자포털을 통해 임상기록 온라인 접근 가능. 한국은 서울대병원·서울아산병원·삼성서울병원·차병원 등 일부 기관만 플랫폼 제공, 공유 정보 범위도 좁음. 국내 의무 시행은 아님.'},
+
+{id:18,week:9,topic:'소비자건강정보학',diff:2,type:'short',
+q:'역진적 의료법칙(Inverse Care Law)을 주장한 사람과 핵심 내용을 쓰시오.',
+keys:['Julian Tudor Hart','반비례','의료수요','Hart'],
+exp:'Julian Tudor Hart 주장. 내용: 의료서비스의 가용성은 실제 의료수요에 반비례한다. 의료서비스가 가장 필요한 계층이 오히려 서비스 이용에서 배제될 위험. 디지털 헬스에도 동일하게 적용됩니다.'},
+
+{id:19,week:9,topic:'소비자건강정보학',diff:2,type:'single',
+q:'디지털 격차(Digital Divide)의 3가지 차원이 아닌 것은?',
+opts:['접근의 격차 — 컴퓨터·인터넷 보유 여부','역량의 격차 — 디지털 문해력, 정보 해석 능력','활용의 격차 — 사용 빈도, 질적 활용 수준','인식의 격차 — 디지털 건강정보의 중요성 인식 수준'],
+ans:[3],
+exp:'디지털 격차의 3가지 차원: ①접근의 격차(기기·인터넷 보유 여부) ②역량의 격차(디지털 문해력) ③활용의 격차(사용 빈도·질). 인식의 격차는 교재에 명시된 차원에 해당하지 않습니다.'},
+
+{id:20,week:9,topic:'소비자건강정보학',diff:1,type:'short',
+q:'건강형평성(Health Equity)과 평등성(Equality)의 차이를 간략히 설명하시오.',
+keys:['동일 배분','구조적','격차 제거','차이'],
+exp:'평등성(Equality) = 자원을 동일하게 배분하는 것. 건강형평성(Health Equity) = 사회경제적·인구학적·지역적 요인에 따른 건강 수준의 구조적 차이가 없는 상태. 형평성은 격차 요인 제거를 목표로 하며 평등성과 구별됩니다.'},
+
+{id:21,week:9,topic:'소비자건강정보학',diff:3,type:'single',
+q:'KWCAG(Korea Web Content Accessibility Guidelines)의 4대 원칙으로 옳지 않은 것은?',
+opts:['인지가능성(정보·UI를 사용자가 인지할 수 있는 방식으로 제공)','운영가능성(UI·내비게이션 조작 가능)','이해가능성(정보·UI 작동 방식 이해 가능)','효율성(최소 시간·최소 단계로 목표 달성)'],
+ans:[3],
+exp:'KWCAG 4대 원칙: ①인지가능성 ②운영가능성 ③이해가능성 ④견고성(다양한 사용자 도구·보조기술에서 신뢰성 있게 해석). 효율성은 4대 원칙에 해당하지 않습니다.'},
+
+{id:22,week:9,topic:'소비자건강정보학',diff:3,type:'short',
+q:'교차성(Intersectionality)이란 무엇이며, 디지털 헬스 맥락에서 어떻게 나타나는지 설명하시오.',
+keys:['여러','동시','취약성','중복','함께'],
+exp:'교차성 = 개인이 여러 사회적·경제적·환경적 취약성을 동시에 가질 수 있다는 개념. 예: 고령 + 저소득 → 스마트기기 보유율과 디지털 리터러시 모두 낮음 → 헬스케어 서비스 활용이 이중으로 어려워짐.'},
+
+{id:23,week:9,topic:'소비자건강정보학',diff:2,type:'single',
+q:'CHI에서 간호사의 역할이 아닌 것은?',
+opts:['신뢰할 수 있는 건강 정보를 찾고 활용할 수 있도록 돕는 정보 제공자','모바일 앱·웨어러블·온라인 포털 사용법을 교육하는 디지털 건강 교육자','환자가 자신의 데이터를 해석하고 의료진과 소통할 수 있도록 돕는 역할','의료기관을 대신하여 환자의 개인 건강 데이터를 외부에 공개·배포하는 역할'],
+ans:[3],
+exp:'CHI에서 간호사의 역할: ①건강 정보 제공자 ②디지털 건강 교육자 ③건강 데이터 해석 지원 ④디지털 격차 해소 지원. 환자의 개인 건강 데이터 외부 공개·배포는 개인정보 보호 원칙에 위배되므로 간호사의 역할이 아닙니다.'},
+
+{id:24,week:9,topic:'소비자건강정보학',diff:1,type:'single',
+q:'환자 참여(Patient Engagement)에 대한 설명으로 옳은 것은?',
+opts:['환자가 의료진에게 모든 의사결정을 위임하는 전통적 패러다임','전통적 의료 패러다임에서 벗어나 환자가 자신의 건강관리와 치료에 적극적으로 관여하는 것','환자가 의료비를 직접 결정하는 제도','의료진이 환자 가족에게 치료 결정권을 이전하는 것'],
+ans:[1],
+exp:'환자 참여 = 전통적 의료 패러다임에서 벗어나 환자가 자신의 건강관리와 치료에 적극적으로 관여하는 것. WHO(2016) 인간 중심적이고 안전한 의료서비스 실현의 필수 요소.'},
+
+{id:25,week:9,topic:'소비자건강정보학',diff:2,type:'short',
+q:'소비자(Consumer)와 의료소비자(Healthcare Consumer)의 개념적 차이를 설명하시오.',
+keys:['능동','주체','건강문제 없어도','현재 건강문제'],
+exp:'소비자 = 상품이나 서비스를 구매하거나 사용하는 사람. 의료소비자 = 의료서비스를 사용하는 사람을 능동적·주체적 존재로 본 개념. 현재 건강문제가 없어도 건강관리를 하는 사람까지 포함하는 확장된 개념.'},
+
+{id:26,week:9,topic:'소비자건강정보학',diff:3,type:'single',
+q:'디지털헬스 리터러시가 낮을 때 나타나는 결과로 옳은 것은?',
+opts:['건강검진 횟수 증가','복약 순응도 향상','다른 소비자와의 건강 격차 심화, 잘못된 정보에 취약','만성질환의 자기관리 능력 향상'],
+ans:[2],
+exp:'디지털헬스 리터러시 낮을 때: 다른 소비자와의 건강 격차 심화, 잘못된 정보에 취약(특히 고령·저소득·건강지식 부족 계층). 리터러시 높을 때: 건강검진 횟수 증가, 복약순응도 향상, 만성질환 관리 향상, 긍정적 건강 행동.'},
+
+// ══ 10주차 — 유전체정보학과 정밀의료 ══
+{id:27,week:10,topic:'유전체·정밀의료',diff:1,type:'single',
+q:'정밀의료(Precision Medicine)와 맞춤의료(Personalized Medicine)의 관계로 옳은 것은?',
+opts:['두 개념은 완전히 동일하다','정밀의료는 맞춤의료의 반대 개념으로 집단 치료에 초점을 둔다','정밀의료는 맞춤의료를 위한 기술적 토대를 제공하며 상호보완적이다','맞춤의료는 유전체 분석에만 초점을 맞춘다'],
+ans:[2],
+exp:'정밀의료 = 유전체정보·분자·세포 수준 분석 결과 활용. 맞춤의료 = 환자 개개인의 고유 특성 고려. 두 개념은 밀접하게 연관·상호보완적이며, 정밀의료는 맞춤의료를 위한 기술적 토대를 제공합니다.'},
+
+{id:28,week:10,topic:'유전체·정밀의료',diff:2,type:'short',
+q:'인간 유전체 중 모든 사람이 동일한 비율과 개인 차이를 나타내는 비율은 각각 몇 %인가?',
+keys:['99.9','0.1'],
+exp:'모든 사람의 99.9%는 동일한 유전체 보유. 0.1%의 차이가 개인의 건강·질환에 관한 중요한 정보를 담고 있음.'},
+
+{id:29,week:10,topic:'유전체·정밀의료',diff:1,type:'single',
+q:'SNP(Single-Nucleotide Polymorphism)의 정의로 옳은 것은?',
+opts:['두 개 이상의 유전자가 결합하는 현상','인간 유전체에서 흔히 나타나는 단일 염기 수준의 유전적 변이','유전자 전체가 복제되는 현상','미토콘드리아 DNA의 변이를 연구하는 분야'],
+ans:[1],
+exp:'SNP(단일염기다형성) = 인간 유전체에서 흔히 나타나는 유전적 변이. HapMap 프로젝트를 통해 인간의 공통된 유전자 변이가 알려졌으며, 이를 기반으로 GWAS 등의 연구가 수행됩니다.'},
+
+{id:30,week:10,topic:'유전체·정밀의료',diff:2,type:'short',
+q:'약물유전학(Pharmacogenomics)이 임상에서 추구하는 목적을 한 문장으로 쓰시오.',
+keys:['약물 반응','유전자','용량','부작용','효과'],
+exp:'약물유전학 = 특정 유전자나 변이에 따른 약물 반응을 연구하는 분야. 목적: 개인별 효과가 크고 부작용이 적은 약물의 종류·용량 결정에 도움. CDSS의 처방전달 기능과 연계 시 안전한 처방 지원 가능.'},
+
+{id:31,week:10,topic:'유전체·정밀의료',diff:2,type:'single',
+q:'후성유전학(Epigenetics)에 대한 설명으로 옳은 것은?',
+opts:['DNA 염기서열의 변화를 통해 유전 형질이 변하는 것을 연구한다','DNA 염기서열 변화 없이 환경 노출이 유전자 발현에 영향을 주는 것을 연구한다','유전자 치료를 통해 질병을 완전히 제거하는 방법을 연구한다','전체 유전체를 고속으로 분석하는 기술을 개발하는 분야이다'],
+ans:[1],
+exp:'후성유전학 = 환경 노출(산전·산후 영양, 스트레스, 흡연, 독성물질 등)이 DNA 염기서열 변화 없이 유전자 발현에 영향을 주는 것 연구. 식이·신체활동 같은 수정 가능한 요인으로 건강증진 가능 → 정밀의료에 매우 유용.'},
+
+{id:32,week:10,topic:'유전체·정밀의료',diff:3,type:'single',
+q:'유전자 치료의 방식이 아닌 것은?',
+opts:['유전자 삽입 — 벡터(바이러스)를 이용해 원하는 위치에 유전자 전달','유전자 대체 — 결함 있는 유전자를 정상 기능 유전자로 교체','유전자 억제 — 질병 유발 유전자 발현 신호 단백질 형성 방해','유전자 복제 — 환자의 건강한 유전자를 대량으로 복사하여 다른 환자에게 이식'],
+ans:[3],
+exp:'유전자 치료 3가지 방식: ①유전자 삽입(벡터 이용, 원하는 위치에 전달) ②유전자 대체(결함→정상) ③유전자 억제(발현 신호 단백질 방해). 유전자 복제·이식은 유전자 치료 방식에 해당하지 않습니다.'},
+
+{id:33,week:10,topic:'유전체·정밀의료',diff:2,type:'short',
+q:'CRISPR-Cas9을 일반적으로 무엇이라고 부르는가?',
+keys:['유전자 가위','gene scissors','유전자가위'],
+exp:'CRISPR-Cas9 = 대표적 유전자 편집기술로, "유전자 가위 기술"이라고 불립니다. 기대: 정밀의료 실현·질병 예방·치료의 혁신. 한계: 고가의 치료비용, 예기치 못한 변이 발생 가능성, 윤리적 문제.'},
+
+{id:34,week:10,topic:'유전체·정밀의료',diff:2,type:'single',
+q:'전장유전체 분석(WGS, Whole Genome Sequencing)에 대한 설명으로 옳은 것은?',
+opts:['특정 유전자의 발현 패턴만을 분석하는 기술','개별 DNA 핵산 프로파일, 미토콘드리아 DNA 질환 관련 변이, 위장관계 미생물 DNA 프로파일 등을 분석하는 기술','혈액 내 단백질 수준을 측정하는 생화학적 기술','신생아 발뒤꿈치 혈액만으로 실시하는 특수 선별 검사'],
+ans:[1],
+exp:'WGS(전장유전체 분석) = 개별 DNA 핵산 프로파일, 미토콘드리아성 DNA 질환 관련 변이, 위장관계 미생물 DNA 프로파일 평가. 최근 신생아 스크린 검사에서도 WGS로 대체되는 추세.'},
+
+{id:35,week:10,topic:'유전체·정밀의료',diff:2,type:'single',
+q:'GWAS(전장유전체 상관성 분석)의 주요 목적으로 옳은 것은?',
+opts:['특정 개인의 전체 유전체를 처음으로 해독하는 것','많은 사람의 유전자 정보를 비교하여 특정 질병 관련 유전자 차이·위험인자를 파악하는 것','손상된 유전자를 건강한 유전자로 교체하는 것','약물의 화학적 구조를 분석하여 최적 약물을 합성하는 것'],
+ans:[1],
+exp:'GWAS = 많은 사람들의 유전자 정보 확인 → 특정 질병이 있는 군 vs 없는 군 비교 → 특정 유전자 차이 분석. 질병 위험인자 파악, 약물반응의 개인 차이 파악(우울증 치료제·마약성 진통제·항암요법 등)에 활용.'},
+
+{id:36,week:10,topic:'유전체·정밀의료',diff:3,type:'short',
+q:'정밀의료 실현을 위해 EMR이 직면한 현실적인 정보학 문제를 한 문장으로 설명하시오.',
+keys:['PDF','비구조화','표준','부재','검색','어려움','형식'],
+exp:'유전자 검사 정보가 대부분 PDF로 EMR에 업로드되거나 비구조화 텍스트로 저장되며, 실험실마다 형식·내용 구성이 달라 체계적 검색·조회·임상 활용이 어렵습니다.'},
+
+{id:37,week:10,topic:'유전체·정밀의료',diff:1,type:'single',
+q:'HapMap 프로젝트에 대한 설명으로 옳은 것은?',
+opts:['2003년 인간유전체 해독 후 작성된 국제적 유전체 지도(하플로타입 맵)이다','개별 환자의 약물 반응만을 측정하는 임상 프로젝트이다','신생아 선별검사를 표준화하기 위한 국내 사업이다','CRISPR-Cas9 기술을 활용한 유전자 편집 프로젝트이다'],
+ans:[0],
+exp:'HapMap 프로젝트: 2003년 인간유전체 해독 → 국제적 유전체 지도(Haplotype Map, HapMap) 작성. 인간의 공통된 유전자 변이가 알려진 계기. SNP(단일염기다형성) 연구의 중요한 기반을 제공했습니다.'},
+
+{id:38,week:10,topic:'유전체·정밀의료',diff:3,type:'short',
+q:'오믹스(Omics)란 무엇인지 간략히 설명하시오.',
+keys:['세포','분자','포괄','대사체','연구'],
+exp:'오믹스 = 세포 분자 수준의 유동적 상호작용을 밝히기 위한 다양한 접근법들의 총칭. 유전체에 인코드된 세포·조직·체액의 소형 분자·대사체를 포괄적으로 연구. 방대한 오믹스 데이터 처리에는 빅데이터 분석 역량이 필수.'},
+
+// ══ 11주차 — 임상의사결정지원 CDSS ══
+{id:39,week:11,topic:'CDSS',diff:1,type:'single',
+q:'CDSS(Clinical Decision Support System)의 정의로 가장 옳은 것은?',
+opts:['병원의 행정 업무를 자동화하는 전산 시스템','의료진이 개별 환자에 대한 의사결정을 내릴 때 그 결정에 영향을 주도록 설계된 컴퓨터 시스템','환자가 스스로 질병을 진단하도록 돕는 앱','의료기기를 원격으로 제어하는 인프라 시스템'],
+ans:[1],
+exp:'CDSS = 의료진이 개별 환자에 대한 의사결정을 내릴 때 그 결정에 영향을 주도록 설계된 컴퓨터 시스템. 개별 환자의 임상 데이터를 이용하고 추론 (Berner & Lande, 2007). HIT 활용을 전제로 하며 EBP 4단계(실무 적용)의 핵심 도구.'},
+
+{id:40,week:11,topic:'CDSS',diff:2,type:'short',
+q:'CDSS의 기능에 따른 3가지 유형을 모두 쓰시오.',
+keys:['정보관리','주의집중','개별화된 권고','권고 제공'],
+exp:'CDSS 기능에 따른 유형: ①정보관리(지식 저장·검색·브라우징에 초점, 정보 해석은 다루지 않음) ②주의집중(검사결과·약물처방 관련 경고·알림, 단순 로직) ③개별화된 권고 제공(사용자 맞춤식 평가·조언, SDM 지원에 직접 기여).'},
+
+{id:41,week:11,topic:'CDSS',diff:2,type:'single',
+q:'CDSS 기능 유형 중 공유의사결정(SDM) 지원에 가장 직접적으로 기여하는 것은?',
+opts:['정보관리 유형 — 지식 저장·검색에 초점','주의집중 유형 — 경고·알림 기능','개별화된 권고 제공 유형 — 맞춤식 평가·조언','임상 주경로 유형 — 다부서 업무 프로세스 지원'],
+ans:[2],
+exp:'개별화된 권고 제공 = 사용자 맞춤식 평가·조언 제공. SDM 지원에 가장 직접적으로 기여. 주의집중은 단순 경고·알림, 정보관리는 지식 저장·검색에 집중하여 SDM에 직접 기여하지 않습니다.'},
+
+{id:42,week:11,topic:'CDSS',diff:2,type:'single',
+q:'딥러닝(Deep Learning)의 한계로 옳지 않은 것은?',
+opts:['추론 과정을 설명하지 못하는 블랙박스 문제가 있다','train data 선택에 주관적 편중이 영향을 줄 수 있다','새로운 상황에 직면 시 추론이 불가능하다','의료 분야에서 실제로 적용된 사례가 전혀 없다'],
+ans:[3],
+exp:'딥러닝 한계: ①블랙박스 문제(추론 설명 불가) ②train data 편중 ③새로운 상황 추론 불가. 딥러닝은 망막 안저 사진에서 당뇨병성 망막병증·황반부종 자동 탐지(Gulshan et al., 2016, JAMA) 등 실제 의료 분야에 이미 적용되고 있습니다.'},
+
+{id:43,week:11,topic:'CDSS',diff:2,type:'short',
+q:'국내 대학병원 외과계 중환자실에서 개발된 욕창발생 예측 시스템이 보완하려 한 기존 도구의 이름은?',
+keys:['Braden Scale','브레이든','브레이든 스케일','Braden'],
+exp:'욕창발생 예측 CDSS: 기존 Braden Scale의 한계를 보완하기 위해 EMR로부터 매일 데이터를 받아 확률추론으로 다음 24시간 발생 가능성을 도출. Braden Scale보다 높은 민감도·특이도 달성, 욕창발생률·중환자실 재원일수 모두 유의미하게 감소.'},
+
+{id:44,week:11,topic:'CDSS',diff:1,type:'single',
+q:'기계학습(Machine Learning)의 정의로 옳은 것은?',
+opts:['인간의 유전자를 분석하여 질병을 예측하는 생명공학 기술','특정 과업을 달성하기 위해 경험이 축적될수록 성능이 향상되는 컴퓨터 프로그램 또는 에이전트 개발','병원의 전자의무기록을 자동으로 입력하는 RPA 시스템','의료진의 수술을 로봇이 대신 수행하는 기계공학 기술'],
+ans:[1],
+exp:'기계학습(ML, Machine Learning) 정의(Mitchell, 1997): 특정 과업을 달성하기 위해 경험이 축적될수록 성능이 향상되는 컴퓨터 프로그램 또는 에이전트 개발. 자율주행, 음성인식, 추천 시스템, 의료 AI 등에 활용.'},
+
+{id:45,week:11,topic:'CDSS',diff:3,type:'short',
+q:'CDSS가 임상 실무에서 쉽게 찾아보기 어려운 3가지 원인을 쓰시오.',
+keys:['데이터','지식','상호운용성','경제적','동기'],
+exp:'①데이터·지식 부족(양질의 데이터와 컴퓨터가 이해할 수 있는 형태의 임상 검증 지식 부족, 다른 환경·환자군 적용 제한) ②상호운용성 미확보(서로 다른 CDSS·EMR 간 지식 통합 어려움 → 사이트별 별도 개발 → 비효율·고비용) ③경제적 동기 부재(현 보상 체계에서 CDSS 투자에 대한 의료기관의 경제적 동기 부족).'},
+
+{id:46,week:11,topic:'CDSS',diff:3,type:'single',
+q:'간호진단 권고 CDSS에서 실재적·잠재적 간호진단의 우선순위를 산정하는 방법은?',
+opts:['담당 의사의 최종 판단으로 결정','휴리스틱 스코어링 방식으로 우선순위와 가중치 산정','환자 선호도 설문을 통해 결정','무작위 알고리즘으로 선정'],
+ans:[1],
+exp:'간호진단 권고 CDSS: 간호사정 데이터(인구학적·임상관찰·검사결과) + 지식기반(개념 간 관련성) → 실재적·잠재적 간호진단 목록을 휴리스틱 스코어링 방식으로 산정, 우선순위·가중치 제공.'},
+
+{id:47,week:11,topic:'CDSS',diff:2,type:'single',
+q:'미국 보훈병원의 이차 뇌졸중 예방 CDSS 주 사용자에 해당하지 않는 것은?',
+opts:['전문간호사(Nurse Practitioner)','의사','PA(의사보조사)','영양사'],
+ans:[3],
+exp:'이차 뇌졸중 예방 CDSS 사용자: 전문간호사, 의사, PA(의사보조사). 뇌졸중 실무지침 권고에 따른 평가·중재·결과 사정을 전문간호사가 수행·기록할 수 있도록 간호기록과 자동 연계, 검사·컨설트 처방 자동 알림 기능.'},
+
+{id:48,week:11,topic:'CDSS',diff:2,type:'short',
+q:'인지과학(Cognitive Science)이 연구하는 내용을 간략히 설명하시오.',
+keys:['정보처리','인간의 마음','지능','행동','다학제'],
+exp:'인지과학 = 정보처리 관점에서 인간의 마음·지능·행동을 연구하는 다학제간 학문. 기억, 주의, 인지, 추론, 언어, 정신능력, 인지적 처리의 컴퓨터 모델을 다룸. 간호에서 AI는 인공신경망으로 인간의 사고를 모델링하는 데 활용.'},
+
+{id:49,week:11,topic:'CDSS',diff:3,type:'single',
+q:'의료 AI의 데이터 문제로 옳은 것은?',
+opts:['모든 AI 모델은 어떤 인종·문화 집단에도 동일하게 적용 가능하다','인종적·문화적 편중이 있어 다른 setting 적용 시 예상치 못한 결과가 나올 수 있다','의료 AI 데이터는 완벽하게 익명화되어 편중 문제가 없다','AI 예측 결과는 항상 의료진의 판단보다 정확하다'],
+ans:[1],
+exp:'의료 AI 데이터 문제: 인종적·문화적 편중 → 다른 setting 적용 시 예상치 못한 결과. AI 맹신 또는 무조건 거부 → 유해사례 초래 가능. 의료전문가는 AI 결과를 반드시 검토·재확인해야 합니다.'},
+
+{id:50,week:11,topic:'CDSS',diff:2,type:'short',
+q:'의료전문가가 AI를 파트너로 활용할 때 필요한 2가지 역량을 쓰시오.',
+keys:['통계학','측정','해석','판단','예측'],
+exp:'①통계학에 대한 지식(변수 측정수준 이해 포함) ②AI가 제시하는 예측을 해석·판단·적용할 수 있는 측정에 대한 이해력. "의료인은 AI가 이러한 전문적 역량을 대체하지 못한다"는 전제 하에 AI를 도구로 활용.'},
+
+{id:51,week:11,topic:'CDSS',diff:2,type:'single',
+q:'CDSS 모드에 따른 분류로 옳지 않은 것은?',
+opts:['시스템 능동성: 능동적 방식 / 수동적 방식','시스템 반응: 실시간 모드 / 비실시간(일괄처리) 모드','활성화 방식: 데이터 주도형 / 시간 주도형 / 이벤트 주도형','데이터 구조: 구조화 모드 / 비구조화 모드'],
+ans:[3],
+exp:'CDSS 모드 분류: ①시스템 능동성(능동적/수동적) ②시스템 반응(실시간/비실시간) ③활성화 방식(데이터 주도형/시간 주도형/이벤트 주도형). 구조화 vs 비구조화는 데이터 유형 분류이며 CDSS 모드 분류에 해당하지 않습니다.'},
+
+{id:52,week:11,topic:'CDSS',diff:2,type:'short',
+q:'CDSS 미래 전망에서 간호사가 담당하는 3가지 역할을 쓰시오.',
+keys:['계획자','지식관리자','최종 사용자','코디네이터'],
+exp:'간호사의 CDSS 역할: ①계획자(의료기관에서 CDSS 접근 기획) ②지식관리자(CDSS에 포함되는 지식 생성·관리, EBP 근거 기반) ③최종 사용자/코디네이터(CDSS를 업무에 활용). CDSS를 통해 간호가 환자결과에 미치는 영향을 입증하는 역할.'},
+
+// ══ 11주차 — 근거기반실무 ══
+{id:53,week:11,topic:'근거기반실무',diff:1,type:'single',
+q:'근거기반실무(EBP, Evidence-Based Practice)의 정의로 옳은 것은?',
+opts:['오직 최신 RCT 연구 결과만을 따르는 실무 방식','최선의 근거, 임상적 전문성, 대상자의 가치와 선호도를 통합하여 임상적 의사결정을 내리는 것','의사의 직관적 경험을 최우선으로 하는 전통적 임상 접근법','비용 절감을 최우선으로 하는 의료 서비스 제공 방식'],
+ans:[1],
+exp:'EBP 정의: "최선의 근거를 바탕으로 활용 가능한 자원을 검토하고, 임상적 전문성과 대상자의 가치와 선호도를 함께 고려하여 임상적 의사결정을 내리는 것". 단순한 연구활용(research utilization)과 구별됩니다.'},
+
+{id:54,week:11,topic:'근거기반실무',diff:2,type:'short',
+q:'EBP의 4가지 핵심 구성 요소를 모두 쓰시오.',
+keys:['Best evidence','최선의 근거','Available resource','활용 가능','Clinical expertise','임상 전문성','Client','대상자','가치','선호도'],
+exp:'EBP 4가지 핵심 구성 요소: ①Best evidence(현재 가장 타당성·신뢰성 높은 연구결과) ②Available resource(인력, 시설, 기구, 시간, 재정 등 활용 가능한 자원) ③Clinical expertise(임상 경험과 기술) ④Client\'s values and preferences(환자와 가족의 선호도·관심·기대치).'},
+
+{id:55,week:11,topic:'근거기반실무',diff:2,type:'single',
+q:'EBP의 5단계 순서로 올바른 것은?',
+opts:['핵심질문 → 비평적 분석 → 근거 검색 → 실무 적용 → 평가','핵심질문 → 근거 검색 → 비평적 분석 → 실무 적용 → 평가','근거 검색 → 핵심질문 → 비평적 분석 → 평가 → 실무 적용','비평적 분석 → 핵심질문 → 근거 검색 → 실무 적용 → 평가'],
+ans:[1],
+exp:'EBP 5단계: ①핵심질문(Core Question) → ②근거 검색(Evidence Search, CINAHL·PubMed·Cochrane) → ③비평적 분석(Critical Appraisal) → ④실무 적용(Application, CDSS 활용) → ⑤평가(Evaluation, PBE 원천 데이터).'},
+
+{id:56,week:11,topic:'근거기반실무',diff:1,type:'short',
+q:'EBP와 PBE의 방향 차이를 간단히 설명하시오.',
+keys:['근거','실무','EBP','PBE','방향'],
+exp:'EBP = 근거 → 실무(연구기반 근거를 임상 의사결정에 적용). PBE = 실무 → 근거(실무현장에서 수집된 데이터로부터 근거를 도출). 두 개념은 서로 밀접하게 교차하며 상보적 관계를 가집니다.'},
+
+{id:57,week:11,topic:'근거기반실무',diff:2,type:'single',
+q:'Cochrane에 대한 설명으로 옳지 않은 것은?',
+opts:['전 세계 사람들이 근거에 기반한 건강 관련 의사결정을 내릴 수 있도록 신뢰할 수 있는 근거를 생산·배포한다','1993년 영국에서 설립한 비영리 국제기구이다','품질과 콘텐츠에 대해 사전에 평가된 Filtered Resources를 제공한다','의사와 연구자만을 위한 유료 학술 데이터베이스 영리 기업이다'],
+ans:[3],
+exp:'Cochrane = 1993년 영국 설립 비영리 국제기구. 목적: 질병 치료·건강관리에 관한 객관적 자료 축적·배포. Filtered Resources(사전 평가된 자료) 제공. 헬스 리터러시가 높은 환자도 직접 탐색하는 경우 증가.'},
+
+{id:58,week:11,topic:'근거기반실무',diff:1,type:'short',
+q:'Cochrane이 설립된 연도와 국가를 쓰시오.',
+keys:['1993','영국'],
+exp:'Cochrane = 1993년 영국에서 설립한 비영리 국제기구. 세계 여러 나라에 지부를 운영하며, 체계적 문헌고찰을 통해 신뢰할 수 있는 의료 근거를 생산·배포합니다.'},
+
+{id:59,week:11,topic:'근거기반실무',diff:2,type:'single',
+q:'근거기반 임상실무 가이드라인의 기능으로 옳지 않은 것은?',
+opts:['명확하고 접근 가능한 근거기반 표준 제정 → 의료인 업무수행 평가 척도 제공','최신 근거 기반 권고 제시 → 객관적 임상의사결정 + 비용 효과적 의료 제공','환자·의료진 교육 도구로 활용 → 환자 참여 촉진','임상 전문가의 개별 경험과 판단을 완전히 대체하는 절대적 규범'],
+ans:[3],
+exp:'근거기반 임상실무 가이드라인 3가지 기능: ①근거기반 표준 제정 ②최신 근거 기반 권고 제시 ③환자·의료진 교육 도구. 가이드라인은 임상 전문성을 완전히 대체하는 것이 아니라 의사결정을 지원하는 도구입니다.'},
+
+{id:60,week:11,topic:'근거기반실무',diff:2,type:'short',
+q:'NICE의 약자를 풀어 쓰고 어느 나라 기관인지 쓰시오.',
+keys:['National Institute for Health and Care Excellence','영국'],
+exp:'NICE = National Institute for Health and Care Excellence. 영국 소재, 임상진료지침·보건의료가이드라인 개발 대표 기관. 국내에는 병원간호사회 자료실이 간호 실무 가이드라인을 제공합니다.'},
+
+{id:61,week:11,topic:'근거기반실무',diff:2,type:'single',
+q:'실무기반근거(PBE, Practice Based Evidence)의 특징으로 옳지 않은 것은?',
+opts:['실무현장에서 수집된 데이터를 이용하는 전향적 접근방법이다','실사용 데이터(Real World Data)를 활용한다','소수 대상·단기간 기존 연구의 한계를 보완한다','연구자가 미리 통제한 실험실 환경에서만 수집된 데이터를 사용한다'],
+ans:[3],
+exp:'PBE = 실무현장의 케어 프로세스를 확인하기 위해 실무로부터 수집된 데이터를 이용하는 혁신적 전향적 접근방법. 실사용 데이터(Real World Data) 활용. 기존 연구(소수 대상, 단기간)의 한계 보완. 실험실이 아닌 실제 임상현장 데이터 사용.'},
+
+{id:62,week:11,topic:'근거기반실무',diff:3,type:'short',
+q:'Cochrane에서 제공하는 Filtered Resources란 무엇인지 설명하시오.',
+keys:['사전','평가','품질','콘텐츠'],
+exp:'Filtered Resources = 품질과 콘텐츠에 대해 사전에 평가된 자료. Cochrane 체계적 문헌고찰이 대표적 예. EBP 2단계(근거 검색)에서 활용되며, 헬스 리터러시가 높은 환자가 스스로 탐색하는 사례도 증가하고 있습니다.'},
+
+{id:63,week:11,topic:'근거기반실무',diff:3,type:'single',
+q:'EHR이 PBE 연구에서 가진 한계로 옳은 것은?',
+opts:['EHR 데이터는 연구자 친화적으로 구성되어 바로 분석에 활용할 수 있다','EHR 데이터가 텍스트 위주이고 연구용으로 정리되어 있지 않아 수작업 재정리 또는 LLM 추가처리가 필요하다','EHR은 PBE에 필요한 어떤 데이터도 제공할 수 없다','EHR 데이터는 개인정보 문제 없이 자유롭게 외부에 공유할 수 있다'],
+ans:[1],
+exp:'EHR의 PBE 한계: 임상정보시스템 데이터가 연구자 친화적이지 않음, 텍스트 데이터·연구용으로 정리되어 있지 않음 → 수작업 재정리 또는 LLM 이용 추가처리 필요, 많은 시간·인력 소모. 따라서 연구설계 전에 임상정보시스템 자료를 충분히 검토해야 함.'},
+
+{id:64,week:11,topic:'근거기반실무',diff:2,type:'single',
+q:'EBP와 기존의 단순한 연구활용(research utilization)의 차이점으로 옳은 것은?',
+opts:['EBP는 근거의 등급을 고려하지 않는다','EBP는 대상자의 요구·관점, 실무자의 경험적 지식, 근거의 등급을 통합하여 임상결정을 내린다','기존 연구활용이 항상 EBP보다 임상결과가 우수하다','EBP는 임상 경험을 전혀 반영하지 않는다'],
+ans:[1],
+exp:'EBP와 기존 연구활용의 차이: ①실무 대상자의 요구·관점 고려 ②실무자 경험적 지식 + 체계적 연구 지식의 통합 ③임상결정에서 근거의 등급 고려. 단순 연구활용과 달리 이 세 가지를 모두 통합합니다.'},
+
+{id:65,week:11,topic:'근거기반실무',diff:3,type:'short',
+q:'근거기반 DSS가 제대로 작동하기 위한 3가지 조건을 쓰시오.',
+keys:['최신 근거','처리','표준화','인터페이스','인프라'],
+exp:'①다양한 유형의 최신 근거를 공유·기계적으로 처리 가능한 시스템 ②표준화된 인터페이스 구축(다양한 유형의 지식 자동 통합) ③근거를 처리할 수 있는 인프라 구축(데이터 표준화·분석 역량 필수).'},
+
+{id:66,week:11,topic:'근거기반실무',diff:1,type:'single',
+q:'EBP 5단계 중 CDSS가 핵심 도구로 활용되는 단계는?',
+opts:['1단계 — 핵심질문(Core Question)','2단계 — 근거 검색(Evidence Search)','3단계 — 비평적 분석(Critical Appraisal)','4단계 — 실무 적용(Application)'],
+ans:[3],
+exp:'EBP 4단계 "실무 적용(Application)"에서 CDSS가 핵심 도구로 활용됨. 2단계 근거 검색에서는 전자문헌 DB(CINAHL, PubMed, Cochrane 등)를 주로 활용. 5단계 평가에서 생성된 데이터는 PBE의 원천이 됩니다.'},
+
+// ══ 13주차 — 간호정보학 연구와 데이터 ══
+{id:67,week:13,topic:'연구·데이터',diff:1,type:'single',
+q:'변수 유형과 그 예시가 올바르게 연결된 것은?',
+opts:['명목변수 — 온도(℃)','서열변수 — 성별(1: 남, 2: 여)','등간변수 — 지능검사 점수(IQ)','비율변수 — 경제적 수준(상·중·하)'],
+ans:[2],
+exp:'등간변수: 온도(℃), 지능검사(IQ). 명목변수: 성별, 혈액형, 거주지역. 서열변수: 경제적 수준(상·중·하), 성적(A~F). 비율변수: 체중, 키, 나이, 시간, 속도, 월수입. 등간변수와 비율변수의 차이: 절대 0점과 비율의 의미 여부.'},
+
+{id:68,week:13,topic:'연구·데이터',diff:2,type:'short',
+q:'서열변수(Ordinal)와 등간변수(Interval)의 차이점을 간략히 설명하시오.',
+keys:['등간','등간격','차이의 크기','동일','간격'],
+exp:'서열변수 = 순위에 따라 수치 부여, 등급 간 차이의 크기는 알 수 없음(간격이 동일하지 않음). 등간변수 = 등간성이 있어 등급 간 간격이 동일하나, 절대 0과 비율은 의미 없음.'},
+
+{id:69,week:13,topic:'연구·데이터',diff:1,type:'single',
+q:'다음 중 비율변수(Ratio)에 해당하는 것은?',
+opts:['온도(℃)','경제적 지위(상·중·하)','지능검사 점수(IQ)','체중(kg)'],
+ans:[3],
+exp:'비율변수 = 등간성 있음 + 절대 0점과 비율 모두 의미 있음 + 모든 통계분석 가능. 예: 체중, 키, 나이, 속도. 온도는 등간변수(절대 0이 없음), 경제적 지위는 서열변수, IQ는 등간변수.'},
+
+{id:70,week:13,topic:'연구·데이터',diff:3,type:'short',
+q:'Likert 척도 논쟁에서 근본주의자와 실용주의자의 두 입장을 각각 설명하시오.',
+keys:['근본주의','서열','등간','실용주의','분석 결과','심각'],
+exp:'근본주의자: 범주 간 간격이 동일하지 않으므로 서열척도, 등간 통계분석 사용 불가. 실용주의자: 측정수준은 연속선상에 있으므로 등간척도로 사용 가능, 분류 위반이 분석 결과에 심각한 영향을 미치지 않는다. 실제 헬스 리터러시 연구에서 Likert를 등간척도로 처리하는 경우가 많음.'},
+
+{id:71,week:13,topic:'연구·데이터',diff:2,type:'single',
+q:'전통적 통계분석과 머신러닝의 비교로 옳은 것은?',
+opts:['머신러닝은 전통 통계보다 설명력이 높다','전통 통계분석의 주요 목적은 미래 결과 예측이다','머신러닝의 주요 목적은 변수 간 관계 설명이다','전통 통계는 "어떤 요인이 결과에 영향을 미치는가", 머신러닝은 "누가 결과를 경험할 것인가"를 주요 질문으로 한다'],
+ans:[3],
+exp:'전통통계 목적 = 변수 간 관계 설명·가설 검정("어떤 요인이 영향을 미치는가"). 머신러닝 목적 = 미래 결과 예측("누가 결과를 경험할 것인가"). 전통통계가 설명력 높고, 머신러닝이 예측력 높음. 전통통계는 표본이 적어도 가능하나, 머신러닝은 데이터가 많을수록 유리.'},
+
+{id:72,week:13,topic:'연구·데이터',diff:2,type:'short',
+q:'Decision Tree에서 Gini Index가 낮다는 것은 무엇을 의미하는가?',
+keys:['순수도','불순도','낮음','같은 집단','모임','purity'],
+exp:'Gini Index = 한 노드 안에 서로 다른 집단이 얼마나 섞여 있는지를 나타내는 불순도(impurity) 지표. Gini index가 낮을수록 순수도(purity)가 높음 → 같은 집단끼리 잘 모여 있음. Decision Tree는 Gini index가 가장 낮아지는 방향으로 분할합니다.'},
+
+{id:73,week:13,topic:'연구·데이터',diff:2,type:'single',
+q:'Decision Tree의 장점이 아닌 것은?',
+opts:['결과 해석이 쉬워 의료진이 이해하기 쉽다','의사결정 과정을 나무 구조로 시각화할 수 있다','과적합(Overfitting) 문제가 거의 발생하지 않는다','비선형 관계도 탐색 가능하다'],
+ans:[2],
+exp:'Decision Tree 장점: ①결과 해석 쉬움 ②의사결정 과정 나무 구조로 시각화 ③비선형 관계 탐색 가능. 단점: 과적합(Overfitting) 발생 쉬움(→Pre/Post-Pruning으로 완화), 데이터 변화에 민감, 예측 성능이 제한적(Ensemble 기법 활용).'},
+
+{id:74,week:13,topic:'연구·데이터',diff:2,type:'short',
+q:'CART란 무엇인지 약자를 풀어 쓰고 특징을 간략히 설명하시오.',
+keys:['Classification and Regression Tree','분류','회귀','Gini','불순도'],
+exp:'CART = Classification and Regression Tree. 의사결정나무를 생성하는 대표적 알고리즘으로, 분류(Classification)와 회귀(Regression) 모두 가능. 분할 시 Gini Index를 이용하여 노드의 불순도(impurity) 최소화.'},
+
+{id:75,week:13,topic:'연구·데이터',diff:2,type:'single',
+q:'Decision Tree의 Node 구조에서 더 이상 분기되지 않는 최종 노드를 무엇이라고 하는가?',
+opts:['Root node — 최상위 노드','Parent node — split 되기 전 노드','Child node — split 된 후 노드','Leaf node — 최종 결과 노드'],
+ans:[3],
+exp:'Leaf node = 더 이상 분기되지 않는 마지막 노드(= 최종 결과). Root node = parent node가 없는 최상위 노드. Parent node = split 되기 전 노드. Child node = split 된 후 노드.'},
+
+{id:76,week:13,topic:'연구·데이터',diff:3,type:'short',
+q:'ANA(2022) 기준 간호정보학의 정의를 핵심 내용 위주로 설명하시오.',
+keys:['간호과학','정보과학','컴퓨터과학','데이터','정보','지식','환자 건강결과','간호의 질'],
+exp:'간호정보학(ANA, 2022) = 간호과학, 정보과학, 컴퓨터과학을 통합하여 데이터를 정보와 지식으로 전환하고, 이를 활용하여 환자 건강결과와 간호의 질 향상을 지원하는 학문 분야.'},
+
+{id:77,week:13,topic:'연구·데이터',diff:2,type:'single',
+q:'의료 데이터의 유형과 예시가 옳게 연결된 것은?',
+opts:['구조화 데이터 — 간호 기록 텍스트, 영상 이미지','비구조화 데이터 — ID·나이·성별·수축기혈압 표 데이터','구조화 데이터 — ID·나이·성별·수축기혈압 표 형태','비구조화 데이터 — 정해진 형식의 수치 검사 결과'],
+ans:[2],
+exp:'구조화 데이터 = ID·나이·성별·수축기혈압 등 표 형태의 데이터 → CDSS 입력에 바로 활용 가능. 비구조화 데이터 = 영상·이미지 데이터, 간호 기록 텍스트 → 딥러닝 처리 필요. PBE 연구에서 EHR 비구조화 데이터 처리가 핵심 과제.'},
+
+{id:78,week:13,topic:'연구·데이터',diff:3,type:'short',
+q:'TRIPOD란 무엇인지 약자를 풀어 쓰고 용도를 간략히 설명하시오.',
+keys:['TRansparent Reporting','multivariable prediction model','Individual Prognosis Or Diagnosis','예측모델','연구보고 지침','보고 지침'],
+exp:'TRIPOD = TRansparent Reporting of a multivariable prediction model for Individual Prognosis Or Diagnosis. 예측모델 연구보고 지침. 설계 단계에서부터 참고하며, EBP의 비평적 분석 단계에서 예측모델 연구 평가 시 활용합니다.'},
+
+{id:79,week:13,topic:'연구·데이터',diff:2,type:'single',
+q:'머신러닝이 전통적 통계분석 대비 강점을 갖는 영역으로 옳은 것은?',
+opts:['변수 간 관계의 방향과 크기를 명확하게 설명하는 것','소수의 표본만으로도 높은 정확도를 보이는 것','미래 결과를 예측하는 정확도가 높은 것','연구자의 이론적 가설을 검증하는 것'],
+ans:[2],
+exp:'머신러닝의 강점: 미래 결과 예측 정확도 높음, 비선형 관계 탐색 가능, 데이터가 많을수록 유리. 전통통계의 강점: 설명력 높음, 가설 검정, 비교적 적은 표본으로도 가능. 두 방법은 서로 보완적.'},
+
+{id:80,week:13,topic:'연구·데이터',diff:3,type:'short',
+q:'이창관(2023)과 서민희 외(2024)의 낙상 연구를 예로 들어, 전통 통계분석과 머신러닝의 목적 차이를 설명하시오.',
+keys:['영향요인','예측 모형','낙상','영향','예측'],
+exp:'이창관(2023) = 전통 통계분석으로 지역사회 거주 노인 낙상 영향요인 분석 → "어떤 요인이 낙상에 영향을 미치는가?" 파악. 서민희 외(2024) = 머신러닝으로 낙상 예측 모형 구축 → "누가 낙상을 경험할 것인가?" 예측. 낙상 예측 모형은 욕창발생 예측 CDSS와 같은 방식으로 임상에 적용될 수 있습니다.'},
+];
+
+// ─── QUIZ STATE ───────────────────────────────────────────────────────────────
+let state = {
+  started: false,
+  finished: false,
+  current: null,
+  difficulty: 1,
+  answered: false,
+  streakCorrect: 0,
+  streakWrong: 0,
+  used: new Set(),
+  totalAnswered: 0,
+  totalCorrect: 0,
+  diffStats: {1:{correct:0,total:0},2:{correct:0,total:0},3:{correct:0,total:0}},
+  selectedOpts: new Set(),
+  shortVal: '',
+  wrongQuestions: [],
+  shuffleMap: null,
+  mode: 'adaptive',
+};
+const TOTAL_ADAPTIVE = 40;
+
+function getTotal(){ return state.mode === 'full' ? QUESTIONS.length : TOTAL_ADAPTIVE; }
+const STREAK_UP = 3;
+const STREAK_DOWN = 2;
+
+function diffLabel(d){return d===1?'기본':d===2?'중급':'고급'}
+function diffClass(d){return d===1?'diff-1':d===2?'diff-2':'diff-3'}
+function typeLabel(t){return t==='single'?'단일정답':'주관식'}
+function weekLabel(w){return w===9?'9주차':w===10?'10주차':w===11?'11주차':'13주차'}
+
+function shuffleArr(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+  return b;
+}
+
+function getPool(diff){
+  return QUESTIONS.filter(q=>q.diff===diff && !state.used.has(q.id));
+}
+
+function pickQuestion(){
+  if(state.mode==='full'){
+    const left=QUESTIONS.filter(q=>!state.used.has(q.id));
+    if(left.length===0) return null;
+    return left[Math.floor(Math.random()*left.length)];
+  }
+  let pool=getPool(state.difficulty);
+  if(pool.length===0){
+    const allLeft=QUESTIONS.filter(q=>!state.used.has(q.id));
+    if(allLeft.length===0) return null;
+    const diffs=[state.difficulty===1?2:state.difficulty-1,state.difficulty===3?2:state.difficulty+1,1,2,3];
+    for(const d of diffs){
+      pool=allLeft.filter(q=>q.diff===d);
+      if(pool.length>0) break;
+    }
+  }
+  if(pool.length===0) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function checkAnswer(){
+  const q=state.current;
+  if(q.type==='short'){
+    const val=state.shortVal.trim().toLowerCase();
+    return q.keys.some(k=>val.includes(k.toLowerCase()));
+  }
+  const selOrig=[...state.selectedOpts].map(di=>state.shuffleMap[di]).sort((a,b)=>a-b);
+  const ans=[...q.ans].sort((a,b)=>a-b);
+  return selOrig.length===ans.length&&selOrig.every((v,i)=>v===ans[i]);
+}
+
+function nextQuestion(){
+  const q=pickQuestion();
+  if(!q||state.totalAnswered>=getTotal()){
+    state.finished=true;
+    render();
+    return;
+  }
+  state.current=q;
+  state.used.add(q.id);
+  state.answered=false;
+  state.selectedOpts=new Set();
+  state.shortVal='';
+  if(q.type==='single'){
+    const idxs=shuffleArr([...Array(q.opts.length).keys()]);
+    state.shuffleMap=idxs;
+  }
+  render();
+}
+
+function submitAnswer(){
+  if(state.answered) return;
+  const q=state.current;
+  if(q.type==='short'&&!state.shortVal.trim()) return;
+  if(q.type==='single'&&state.selectedOpts.size===0) return;
+  state.answered=true;
+  const correct=checkAnswer();
+  state.totalAnswered++;
+  state.diffStats[q.diff].total++;
+  if(correct){
+    state.totalCorrect++;
+    state.diffStats[q.diff].correct++;
+    state.streakCorrect++;
+    state.streakWrong=0;
+    if(state.streakCorrect>=STREAK_UP&&state.difficulty<3){
+      state.difficulty++;
+      state.streakCorrect=0;
+    }
+  } else {
+    state.wrongQuestions.push(q.id);
+    state.streakWrong++;
+    state.streakCorrect=0;
+    if(state.streakWrong>=STREAK_DOWN&&state.difficulty>1){
+      state.difficulty--;
+      state.streakWrong=0;
+    }
+  }
+  render();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('app');
+  if(!state.started){app.innerHTML=renderStart();return;}
+  if(state.finished){app.innerHTML=renderResult();return;}
+  app.innerHTML=renderQuestion();
+  bindEvents();
+}
+
+function renderStart(){
+  const q1=QUESTIONS.filter(q=>q.diff===1).length;
+  const q2=QUESTIONS.filter(q=>q.diff===2).length;
+  const q3=QUESTIONS.filter(q=>q.diff===3).length;
+  return `
+  <div class="header">
+    <h1>간호정보학 퀴즈</h1>
+    <p>한양대학교 간호대학 · 9·10·11·13주차</p>
+  </div>
+  <div class="card">
+    <div class="start">
+      <h2>학습 모드 선택</h2>
+      <p>적응형 모드는 정답률에 따라 난이도가 자동으로 조정됩니다.</p>
+      <div class="mode-tabs">
+        <button class="mode-tab ${state.mode==='adaptive'?'active':''}" onclick="setMode('adaptive')">
+          <div class="mode-tab-title">적응형 모드</div>
+          <div class="mode-tab-sub">40문제 · 난이도 자동 조정</div>
+        </button>
+        <button class="mode-tab ${state.mode==='full'?'active':''}" onclick="setMode('full')">
+          <div class="mode-tab-title">전체 풀기</div>
+          <div class="mode-tab-sub">80문제 전체 · 순서 랜덤</div>
+        </button>
+      </div>
+      <div class="start-grid">
+        <div class="start-cell"><div class="start-cell-n n-green">${q1}</div><div class="start-cell-l">기본 문제</div></div>
+        <div class="start-cell"><div class="start-cell-n n-blue">${q2}</div><div class="start-cell-l">중급 문제</div></div>
+        <div class="start-cell"><div class="start-cell-n n-pink">${q3}</div><div class="start-cell-l">고급 문제</div></div>
+      </div>
+      <div class="algo-box">
+        <strong>적응형 알고리즘</strong><br>
+        연속 3문제 정답 → 난이도 상승 · 연속 2문제 오답 → 난이도 하강<br>
+        <strong>주제 구성</strong><br>
+        9주차 — 디지털 헬스 · 소비자건강정보학<br>
+        10주차 — 유전체정보학과 정밀의료<br>
+        11주차 — CDSS · 근거기반실무(EBP/PBE)<br>
+        13주차 — 간호정보학 연구와 데이터
+      </div>
+      <a href="menu.html" class="btn-back" style="margin-bottom:20px">← 메뉴로</a>
+      <br><br>
+      <button class="btn btn-primary" onclick="startQuiz()" style="padding:14px 44px;font-size:1.05rem">시작하기</button>
+    </div>
+  </div>`;
+}
+
+function renderQuestion(){
+  const q=state.current;
+  const progress=state.totalAnswered/getTotal();
+  const streakStr=state.streakCorrect>0?`🔥 ${state.streakCorrect}연속`:(state.streakWrong>0?`❌ ${state.streakWrong}연속`:'');
+  let optsHtml='';
+  if(q.type==='single'){
+    const shuffled=state.shuffleMap.map(i=>({text:q.opts[i],origIdx:i,dispIdx:state.shuffleMap.indexOf(i)}));
+    optsHtml=`<div class="options">`;
+    state.shuffleMap.forEach((origIdx,dispIdx)=>{
+      let cls='option';
+      if(state.answered){
+        if(q.ans.includes(origIdx)){cls+=' correct';}
+        else if(state.selectedOpts.has(dispIdx)){cls+=' wrong';}
+      } else if(state.selectedOpts.has(dispIdx)){cls+=' selected';}
+      optsHtml+=`<label class="${cls}" data-disp="${dispIdx}"><input type="radio" name="opt" ${state.answered?'disabled':''} ${state.selectedOpts.has(dispIdx)?'checked':''}><span class="option-text">${q.opts[origIdx]}</span></label>`;
+    });
+    optsHtml+=`</div>`;
+  } else {
+    const inputCls=state.answered?(checkAnswer()?'correct-input':'wrong-input'):'';
+    optsHtml=`<textarea class="short-input ${inputCls}" rows="3" placeholder="여기에 답을 입력하세요..." ${state.answered?'disabled':''}>${state.shortVal}</textarea>`;
+  }
+  let feedbackHtml='';
+  if(state.answered){
+    const ok=checkAnswer();
+    feedbackHtml=`<div class="feedback ${ok?'correct-fb':'wrong-fb'}">
+      <div class="feedback-title">${ok?'✓ 정답입니다!':'✗ 오답입니다'}</div>
+      <div class="feedback-exp">${q.exp}</div>
+    </div>`;
+  }
+  return `
+  <div class="back-row"><a href="menu.html" class="btn-back">← 메뉴</a></div>
+  <div class="header">
+    <h1>간호정보학 퀴즈</h1>
+    <p>${weekLabel(q.week)} · ${q.topic}</p>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(progress*100)}%"></div></div>
+  <div class="progress-meta">
+    <span>${state.totalAnswered} / ${getTotal()} 문제</span>
+    <span>${Math.round(state.totalAnswered>0?state.totalCorrect/state.totalAnswered*100:0)}% 정답</span>
+  </div>
+  <div class="diff-row">
+    <span class="diff-badge ${diffClass(q.diff)}">${diffLabel(q.diff)}</span>
+    <span class="week-badge">${weekLabel(q.week)}</span>
+    <span class="type-badge">${typeLabel(q.type)}</span>
+    ${streakStr?`<span class="streak-badge">${streakStr}</span>`:''}
+  </div>
+  <div class="card">
+    <div class="q-num">문제 ${state.totalAnswered+1} of ${getTotal()}</div>
+    <div class="q-text">${q.q}</div>
+    ${optsHtml}
+    ${feedbackHtml}
+    <div class="btn-row">
+      ${!state.answered?`<button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">제출</button>`:''}
+      ${state.answered?`<button class="btn btn-next" onclick="advance()">다음 문제 →</button>`:''}
+    </div>
+  </div>`;
+}
+
+function renderResult(){
+  const pct=Math.round(state.totalCorrect/state.totalAnswered*100);
+  const msg=pct>=90?'완벽에 가깝습니다! 시험 자신있게 보세요 💪':
+            pct>=75?'잘 했어요! 틀린 부분 한 번 더 복습하면 완벽.':
+            pct>=60?'절반 이상 맞았어요. 취약 주제 집중 복습이 필요합니다.':
+            '기초부터 다시 한 번 정리해 봐요. 차근차근 할 수 있어요!';
+  const d1=state.diffStats[1],d2=state.diffStats[2],d3=state.diffStats[3];
+  return `
+  <div class="back-row"><a href="menu.html" class="btn-back">← 메뉴</a></div>
+  <div class="header"><h1>간호정보학 퀴즈</h1><p>결과 요약</p></div>
+  <div class="card">
+    <div class="result">
+      <div class="result-score">${pct}%</div>
+      <div class="result-label">${state.totalCorrect} / ${state.totalAnswered} 정답</div>
+      <div class="result-msg">${msg}</div>
+      <div class="result-grid">
+        <div class="result-cell"><div class="result-cell-n n-green">${d1.total>0?Math.round(d1.correct/d1.total*100):'-'}%</div><div class="result-cell-l">기본 (${d1.correct}/${d1.total})</div></div>
+        <div class="result-cell"><div class="result-cell-n n-blue">${d2.total>0?Math.round(d2.correct/d2.total*100):'-'}%</div><div class="result-cell-l">중급 (${d2.correct}/${d2.total})</div></div>
+        <div class="result-cell"><div class="result-cell-n n-pink">${d3.total>0?Math.round(d3.correct/d3.total*100):'-'}%</div><div class="result-cell-l">고급 (${d3.correct}/${d3.total})</div></div>
+      </div>
+      <div class="diff-summary">
+        ${d1.total>0?`<div class="diff-summary-row"><span class="diff-badge diff-1">기본</span><span>${d1.correct}/${d1.total}문제 · ${Math.round(d1.correct/d1.total*100)}%</span></div>`:''}
+        ${d2.total>0?`<div class="diff-summary-row"><span class="diff-badge diff-2">중급</span><span>${d2.correct}/${d2.total}문제 · ${Math.round(d2.correct/d2.total*100)}%</span></div>`:''}
+        ${d3.total>0?`<div class="diff-summary-row"><span class="diff-badge diff-3">고급</span><span>${d3.correct}/${d3.total}문제 · ${Math.round(d3.correct/d3.total*100)}%</span></div>`:''}
+      </div>
+      <button class="btn-restart" onclick="restartQuiz()">다시 풀기</button>
+    </div>
+  </div>`;
+}
+
+// ─── EVENT BINDING ────────────────────────────────────────────────────────────
+function bindEvents(){
+  const q=state.current;
+  if(q&&q.type==='single'&&!state.answered){
+    document.querySelectorAll('.option').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.answered) return;
+        const disp=parseInt(el.dataset.disp);
+        state.selectedOpts=new Set([disp]);
+        render();
+        bindEvents();
+      });
+    });
+  }
+  if(q&&q.type==='short'&&!state.answered){
+    const ta=document.querySelector('.short-input');
+    if(ta){
+      ta.value=state.shortVal;
+      ta.addEventListener('input',e=>{state.shortVal=e.target.value;});
+      ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitAnswer();}});
+      ta.focus();
+    }
+  }
+  const sb=document.getElementById('submitBtn');
+  if(sb){
+    const disable=()=>{
+      if(q.type==='single'&&state.selectedOpts.size===0) sb.disabled=true;
+      else if(q.type==='short'&&!state.shortVal.trim()) sb.disabled=true;
+      else sb.disabled=false;
+    };
+    disable();
+    if(q.type==='short'){
+      const ta=document.querySelector('.short-input');
+      if(ta) ta.addEventListener('input',()=>{sb.disabled=!ta.value.trim();});
+    }
+  }
+}
+
+// ─── GLOBAL FUNCTIONS ─────────────────────────────────────────────────────────
+function setMode(m){state.mode=m;render();}
+function startQuiz(){state.started=true;nextQuestion();}
+function advance(){
+  if(state.totalAnswered>=getTotal()){state.finished=true;render();return;}
+  nextQuestion();
+}
+function restartQuiz(){
+  state={started:false,finished:false,current:null,difficulty:1,answered:false,
+    streakCorrect:0,streakWrong:0,used:new Set(),totalAnswered:0,totalCorrect:0,
+    diffStats:{1:{correct:0,total:0},2:{correct:0,total:0},3:{correct:0,total:0}},
+    selectedOpts:new Set(),shortVal:'',wrongQuestions:[],shuffleMap:null,mode:state.mode};
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
